@@ -1,4 +1,8 @@
 .DS_Store
 .build/
+.swiftpm/
+.vscode/
 Examples/**/.build/
+**/*.xcodeproj/project.xcworkspace/
+**/*.xcodeproj/xcuserdata/
 /tmp/
