@@ -9,6 +9,155 @@ import Testing
     #expect(grammar.repository["array"] != nil)
 }
 
+@Test func loadsMonokaiThemeFixture() throws {
+    let fixtureURL = URL(fileURLWithPath: "/Users/gmao/code/SyntaxKit/themes/Monokai.tmTheme")
+    let theme = try ThemeLoader.load(from: fixtureURL)
+    #expect(theme.name == "Monokai")
+    #expect(theme.globals.background?.rawValue == "#272822")
+    #expect(theme.globals.gutter?.rawValue == "#49483E")
+    #expect(theme.globals.gutterForeground?.rawValue == "#75715E")
+    #expect(theme.rules.contains(where: { $0.scopes.contains("comment") && $0.style.foreground?.rawValue == "#75715E" }))
+    #expect(theme.rules.contains(where: { $0.scopes.contains("constant.numeric") }))
+}
+
+@Test func rejectsThemeWithoutName() throws {
+    let plist = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>settings</key>
+      <array>
+        <dict><key>settings</key><dict/></dict>
+      </array>
+    </dict>
+    </plist>
+    """
+    try expectThemeError(plist: plist, containing: "Theme is missing required key 'name'")
+}
+
+@Test func rejectsThemeWithoutSettings() throws {
+    let plist = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>name</key><string>Broken</string>
+      <key>settings</key><array/>
+    </dict>
+    </plist>
+    """
+    try expectThemeError(plist: plist, containing: "non-empty key 'settings'")
+}
+
+@Test func rejectsMalformedThemeStructures() throws {
+    let topLevelArray = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <array><string>bad</string></array>
+    </plist>
+    """
+    try expectThemeError(plist: topLevelArray, containing: "Top-level theme plist must be a dictionary")
+
+    let badGlobalEntry = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>name</key><string>Broken</string>
+      <key>settings</key>
+      <array>
+        <string>bad</string>
+      </array>
+    </dict>
+    </plist>
+    """
+    try expectThemeError(plist: badGlobalEntry, containing: "Theme global settings entry must be a dictionary")
+
+    let missingGlobalSettingsDict = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>name</key><string>Broken</string>
+      <key>settings</key>
+      <array>
+        <dict/>
+      </array>
+    </dict>
+    </plist>
+    """
+    try expectThemeError(plist: missingGlobalSettingsDict, containing: "must contain a 'settings' dictionary")
+
+    let badRuleEntry = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>name</key><string>Broken</string>
+      <key>settings</key>
+      <array>
+        <dict><key>settings</key><dict/></dict>
+        <string>bad</string>
+      </array>
+    </dict>
+    </plist>
+    """
+    try expectThemeError(plist: badRuleEntry, containing: "Theme scope style entry must be a dictionary")
+
+    let missingRuleSettings = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>name</key><string>Broken</string>
+      <key>settings</key>
+      <array>
+        <dict><key>settings</key><dict/></dict>
+        <dict><key>scope</key><string>comment</string></dict>
+      </array>
+    </dict>
+    </plist>
+    """
+    try expectThemeError(plist: missingRuleSettings, containing: "Theme scope style entry must contain a 'settings' dictionary")
+}
+
+@Test func themeLoaderParsesFontStylesAndCommaSeparatedScopes() throws {
+    let theme = try ThemeLoader.load(data: Data(sampleTheme.utf8))
+    let rule = try #require(theme.rules.first)
+    #expect(rule.name == "Multi Scope")
+    #expect(rule.scopes == ["comment", "string.quoted"])
+    #expect(rule.style.foreground?.rawValue == "#112233")
+    #expect(rule.style.background?.rawValue == "#445566")
+    #expect(rule.style.fontStyles == [.bold, .italic, .underline])
+}
+
+@Test func themeLoaderDefaultsMissingScopeToEmptyList() throws {
+    let theme = try ThemeLoader.load(data: Data(themeWithoutScope.utf8))
+    let rule = try #require(theme.rules.first)
+    #expect(rule.scopes.isEmpty)
+}
+
+@Test func themePublicTypesCoverInitializers() throws {
+    let color = ThemeColor(rawValue: "#ABCDEF")
+    let style = ThemeStyle(foreground: color, background: nil, fontStyles: [.bold])
+    let globals = ThemeGlobals(
+        background: color,
+        foreground: color,
+        caret: color,
+        selection: color,
+        selectionForeground: color,
+        lineHighlight: color,
+        gutter: color,
+        gutterForeground: color
+    )
+    let rule = ThemeRule(name: "Rule", scopes: ["comment"], style: style)
+    let theme = Theme(name: "Theme", globals: globals, rules: [rule])
+    #expect(theme.name == "Theme")
+    #expect(theme.rules.first?.style.fontStyles == [.bold])
+}
+
 @Test func rejectsMissingScopeName() throws {
     let plist = """
     <?xml version="1.0" encoding="UTF-8"?>
@@ -477,6 +626,15 @@ private func expectSyntaxKitError(plist: String, containing needle: String) thro
     }
 }
 
+private func expectThemeError(plist: String, containing needle: String) throws {
+    do {
+        _ = try ThemeLoader.load(data: Data(plist.utf8))
+        Issue.record("Expected ThemeLoader to throw.")
+    } catch let error as SyntaxKitError {
+        #expect(error.description.contains(needle))
+    }
+}
+
 private func plist(ruleBody: String) -> String {
     """
     <?xml version="1.0" encoding="UTF-8"?>
@@ -627,6 +785,57 @@ private let zeroWidthMatchGrammar = """
     <dict>
       <key>match</key><string>(?=a)</string>
       <key>name</key><string>keyword.zero.match</string>
+    </dict>
+  </array>
+</dict>
+</plist>
+"""
+
+private let sampleTheme = """
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>name</key><string>Sample</string>
+  <key>settings</key>
+  <array>
+    <dict>
+      <key>settings</key>
+      <dict>
+        <key>background</key><string>#000000</string>
+        <key>foreground</key><string>#FFFFFF</string>
+      </dict>
+    </dict>
+    <dict>
+      <key>name</key><string>Multi Scope</string>
+      <key>scope</key><string>comment, string.quoted</string>
+      <key>settings</key>
+      <dict>
+        <key>foreground</key><string>#112233</string>
+        <key>background</key><string>#445566</string>
+        <key>fontStyle</key><string>bold italic underline</string>
+      </dict>
+    </dict>
+  </array>
+</dict>
+</plist>
+"""
+
+private let themeWithoutScope = """
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>name</key><string>No Scope</string>
+  <key>settings</key>
+  <array>
+    <dict><key>settings</key><dict/></dict>
+    <dict>
+      <key>name</key><string>Fallback</string>
+      <key>settings</key>
+      <dict>
+        <key>foreground</key><string>#010203</string>
+      </dict>
     </dict>
   </array>
 </dict>
