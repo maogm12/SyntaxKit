@@ -52,9 +52,9 @@ public struct Rule: Equatable, Sendable {
         self.match = match
         self.begin = begin
         self.end = end
-        self.captures = captures.sorted(using: KeyPathComparator(\.index))
-        self.beginCaptures = beginCaptures.sorted(using: KeyPathComparator(\.index))
-        self.endCaptures = endCaptures.sorted(using: KeyPathComparator(\.index))
+        self.captures = captures.sorted { $0.index < $1.index }
+        self.beginCaptures = beginCaptures.sorted { $0.index < $1.index }
+        self.endCaptures = endCaptures.sorted { $0.index < $1.index }
         self.include = include
         self.patterns = patterns
     }

@@ -6,6 +6,12 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-03-24
+
+### Added
+
+- Removed the macOS-only Swift Package manifest restriction so the library can be built on any platform supported by Swift Package Manager and Foundation
+
 ## [0.1.0] - 2026-03-24
 
 ### Added

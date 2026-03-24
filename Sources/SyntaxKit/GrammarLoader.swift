@@ -120,6 +120,6 @@ private struct GrammarDecoder {
             }
             captures.append(Capture(index: index, name: name))
         }
-        return captures.sorted(using: KeyPathComparator(\.index))
+        return captures.sorted { $0.index < $1.index }
     }
 }
