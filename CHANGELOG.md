@@ -6,6 +6,13 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-03-24
+
+### Added
+
+- Added themed JSON inspection output via `syntaxkit parse --json --theme <path>` so CLI users can inspect resolved styles without using ANSI preview
+- Added CLI coverage for themed JSON output and JSON formatting helpers
+
 ## [0.4.0] - 2026-03-24
 
 ### Added

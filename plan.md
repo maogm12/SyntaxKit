@@ -193,7 +193,7 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 
 - [x] Add `--theme path` support to `syntaxkit preview`
 - [x] Make `preview` use parsed tmTheme colors instead of the built-in debug palette when a theme is provided
-- [ ] Add a CLI mode to inspect resolved styles, such as themed JSON output for spans
+- [x] Add a CLI mode to inspect resolved styles, such as themed JSON output for spans
 - [x] Keep ANSI preview as a debug adapter layered on top of parsed theme styles
 
 ### Theme Validation and Testing

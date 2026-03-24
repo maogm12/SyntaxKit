@@ -41,7 +41,7 @@ struct CLI {
         """
         Usage:
           syntaxkit validate --grammar path [--grammar path ...]
-          syntaxkit parse --grammar path [--grammar path ...] --scope scope.name --input file [--json]
+          syntaxkit parse --grammar path [--grammar path ...] --scope scope.name --input file [--json] [--theme path]
           syntaxkit preview --grammar path [--grammar path ...] --scope scope.name --input file [--theme path]
         """
     }
@@ -64,10 +64,13 @@ struct CLI {
         let parser = SyntaxParser(registry: registry)
         let result = try parser.parse(input, using: scope)
         if options.jsonOutput {
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-            let data = try encoder.encode(result)
-            stdout(String(decoding: data, as: UTF8.self) + "\n")
+            if let themePath = options.themePath {
+                let theme = try ThemeLoader.load(from: URL(fileURLWithPath: themePath))
+                let themed = ThemeResolver.resolve(result: result, using: theme)
+                stdout(try prettyJSONString(from: themed))
+            } else {
+                stdout(try prettyJSONString(from: result))
+            }
         } else {
             for span in result.spans {
                 let scopes = span.scopes.joined(separator: " ")
@@ -152,6 +155,13 @@ struct CLI {
             index += 1
         }
         return options
+    }
+
+    static func prettyJSONString<T: Encodable>(from value: T) throws -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        let data = try encoder.encode(value)
+        return String(decoding: data, as: UTF8.self) + "\n"
     }
 }
 

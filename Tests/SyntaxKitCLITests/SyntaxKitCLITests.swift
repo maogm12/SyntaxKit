@@ -13,6 +13,27 @@ import Testing
     #expect(options.themePath == "theme.tmTheme")
 }
 
+@Test func cliParseJsonUsesThemedSpanOutputWhenThemeIsProvided() throws {
+    let grammarPath = "/Users/gmao/code/SyntaxKit/languages/JSON.tmLanguage"
+    let themePath = "/Users/gmao/code/SyntaxKit/themes/Monokai.tmTheme"
+    let samplePath = "/tmp/syntaxkit-cli-parse-themed.json"
+    try "{ \"ok\": true }\n".write(toFile: samplePath, atomically: true, encoding: .utf8)
+
+    var stdout = ""
+    var stderr = ""
+    let exitCode = CLI.run(
+        arguments: ["parse", "--grammar", grammarPath, "--scope", "source.json", "--input", samplePath, "--json", "--theme", themePath],
+        stdout: { stdout += $0 },
+        stderr: { stderr += $0 }
+    )
+
+    #expect(exitCode == 0)
+    #expect(stderr.isEmpty)
+    #expect(stdout.contains("\"style\""))
+    #expect(stdout.contains("\"foreground\""))
+    #expect(stdout.contains("punctuation.definition.dictionary.begin.json"))
+}
+
 @Test func cliPreviewUsesThemeWhenProvided() throws {
     let grammarPath = "/Users/gmao/code/SyntaxKit/languages/JSON.tmLanguage"
     let themePath = "/Users/gmao/code/SyntaxKit/themes/Monokai.tmTheme"
@@ -59,4 +80,17 @@ import Testing
     #expect(ANSIHighlighter.rgb(from: "not-a-color") == nil)
     #expect(ANSIHighlighter.rgb(from: "#010203")?.red == 1)
     #expect(ANSIHighlighter.rgb(from: "#01020304")?.blue == 3)
+}
+
+@Test func cliPrettyJSONStringFormatsSortedOutput() throws {
+    struct Example: Codable {
+        let beta: Int
+        let alpha: Int
+    }
+
+    let json = try CLI.prettyJSONString(from: Example(beta: 2, alpha: 1))
+    #expect(json.contains("\n"))
+    let alphaRange = try #require(json.range(of: "\"alpha\""))
+    let betaRange = try #require(json.range(of: "\"beta\""))
+    #expect(alphaRange.lowerBound < betaRange.lowerBound)
 }
