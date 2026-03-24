@@ -6,6 +6,12 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-03-24
+
+### Added
+
+- Added parse and render timing readouts to the macOS demo app so you can see reparse and preview costs separately while editing
+
 ## [1.4.0] - 2026-03-24
 
 ### Added

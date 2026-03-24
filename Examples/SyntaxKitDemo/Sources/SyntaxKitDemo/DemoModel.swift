@@ -10,6 +10,8 @@ final class DemoModel: ObservableObject {
     @Published private(set) var preview = NSAttributedString(string: "")
     @Published private(set) var themedSpans: [ThemedSpan] = []
     @Published private(set) var lineStates: [SyntaxLineState] = []
+    @Published private(set) var parseDurationMilliseconds: Double = 0
+    @Published private(set) var renderDurationMilliseconds: Double = 0
     @Published private(set) var errorMessage: String?
     @Published private(set) var grammarName = "JSON"
     @Published private(set) var grammarScopeName = "source.json"
@@ -42,15 +44,22 @@ final class DemoModel: ObservableObject {
     private func render() {
         guard let parser, let theme else { return }
         do {
+            let parseStart = CFAbsoluteTimeGetCurrent()
             let incremental = try parser.parseIncrementally(sourceText, using: grammarScopeName)
+            parseDurationMilliseconds = (CFAbsoluteTimeGetCurrent() - parseStart) * 1000
+
+            let renderStart = CFAbsoluteTimeGetCurrent()
             let spans = ThemeResolver.resolve(result: incremental.parseResult, using: theme)
             themedSpans = spans
             lineStates = incremental.lineStates
             preview = DemoRenderer.render(text: sourceText, spans: spans)
+            renderDurationMilliseconds = (CFAbsoluteTimeGetCurrent() - renderStart) * 1000
             errorMessage = nil
         } catch {
             themedSpans = []
             lineStates = []
+            parseDurationMilliseconds = 0
+            renderDurationMilliseconds = 0
             preview = NSAttributedString(string: sourceText)
             errorMessage = String(describing: error)
         }
@@ -150,6 +159,14 @@ extension DemoModel {
     func updateSource(_ value: String) {
         sourceText = value
         scheduleRender()
+    }
+
+    var timingText: String {
+        "Parse: \(Self.format(milliseconds: parseDurationMilliseconds))  |  Render: \(Self.format(milliseconds: renderDurationMilliseconds))"
+    }
+
+    private static func format(milliseconds: Double) -> String {
+        String(format: "%.2f ms", milliseconds)
     }
 }
 
