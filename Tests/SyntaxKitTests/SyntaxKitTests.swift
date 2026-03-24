@@ -14,6 +14,7 @@ import Testing
     let theme = try ThemeLoader.load(from: fixtureURL)
     #expect(theme.name == "Monokai")
     #expect(theme.globals.background?.rawValue == "#272822")
+    #expect(theme.globals.background?.rgba?.red == 39)
     #expect(theme.globals.gutter?.rawValue == "#49483E")
     #expect(theme.globals.gutterForeground?.rawValue == "#75715E")
     #expect(theme.rules.contains(where: { $0.scopes.contains("comment") && $0.style.foreground?.rawValue == "#75715E" }))
@@ -165,6 +166,42 @@ import Testing
         style: style
     )
     #expect(themedSpan.style.foreground == color)
+}
+
+@Test func themeColorParsesHexAndNamedColors() throws {
+    #expect(ThemeColor(parsing: "#123")?.rgba?.red == 17)
+    #expect(ThemeColor(parsing: "#1234")?.rgba?.alpha == 68)
+    #expect(ThemeColor(parsing: "#112233")?.rgba?.blue == 51)
+    #expect(ThemeColor(parsing: "#11223344")?.rgba?.alpha == 68)
+    #expect(ThemeColor(parsing: "red")?.rgba?.red == 255)
+    #expect(ThemeColor(parsing: "white")?.rgba?.blue == 255)
+    #expect(ThemeColor(parsing: "#12g") == nil)
+    #expect(ThemeColor(parsing: "#123z") == nil)
+    #expect(ThemeColor(parsing: "#12") == nil)
+    #expect(ThemeColor(parsing: "not-a-color") == nil)
+    #expect(ThemeColor(rawValue: "not-a-color").rgba == nil)
+}
+
+@Test func themeLoaderRejectsInvalidColors() throws {
+    let badTheme = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>name</key><string>Bad Color</string>
+      <key>settings</key>
+      <array>
+        <dict>
+          <key>settings</key>
+          <dict>
+            <key>foreground</key><string>not-a-color</string>
+          </dict>
+        </dict>
+      </array>
+    </dict>
+    </plist>
+    """
+    try expectThemeError(plist: badTheme, containing: "unsupported color")
 }
 
 @Test func themeResolverMatchesPrefixScopesAndUsesGlobals() throws {

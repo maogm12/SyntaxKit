@@ -232,10 +232,10 @@ enum ANSIHighlighter {
         if style.fontStyles.contains(.underline) {
             codes.append("4")
         }
-        if let foreground = style.foreground, let rgb = rgb(from: foreground.rawValue) {
+        if let rgb = style.foreground?.rgba {
             codes.append("38;2;\(rgb.red);\(rgb.green);\(rgb.blue)")
         }
-        if let background = style.background, let rgb = rgb(from: background.rawValue) {
+        if let rgb = style.background?.rgba {
             codes.append("48;2;\(rgb.red);\(rgb.green);\(rgb.blue)")
         }
         if codes.isEmpty {
@@ -245,14 +245,7 @@ enum ANSIHighlighter {
     }
 
     static func rgb(from rawColor: String) -> (red: Int, green: Int, blue: Int)? {
-        guard rawColor.hasPrefix("#") else { return nil }
-        let hex = String(rawColor.dropFirst())
-        if hex.count == 6, let value = Int(hex, radix: 16) {
-            return ((value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF)
-        }
-        if hex.count == 8, let value = Int(hex, radix: 16) {
-            return ((value >> 24) & 0xFF, (value >> 16) & 0xFF, (value >> 8) & 0xFF)
-        }
-        return nil
+        guard let rgba = ThemeColor(parsing: rawColor)?.rgba else { return nil }
+        return (rgba.red, rgba.green, rgba.blue)
     }
 }

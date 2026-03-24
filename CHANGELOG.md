@@ -6,6 +6,15 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-03-24
+
+### Added
+
+- Added parsed tmTheme color support for short and long hex forms, including RGB and RGBA variants
+- Added X11 named color support for theme loading and CLI ANSI preview rendering
+- Added validation so unsupported tmTheme colors fail during loading instead of being silently carried through
+- Added regression tests for valid and invalid theme color parsing paths
+
 ## [0.3.1] - 2026-03-24
 
 ### Fixed

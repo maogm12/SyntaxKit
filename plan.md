@@ -122,10 +122,10 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 - [x] Use Foundation-only runtime dependencies
 - [x] Use `NSRegularExpression` behind an internal regex helper
 - [x] Use UTF-16 offsets plus line/column metadata in public spans
-- [x] Keep theme/render logic out of the library
+- [x] Keep theme/render logic decoupled from parsing in the core library
 - [ ] Add incremental parsing support in a future iteration
 - [ ] Add broader fixture coverage beyond JSON
-- [ ] Add tmTheme loading, matching, and style resolution
+- [x] Add tmTheme loading, matching, and style resolution
 - [ ] Consider richer renderer adapters outside the core library
 
 ## Theme Support Tasks
@@ -146,26 +146,27 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 
 ### Theme Settings Support
 
-- [ ] Support global settings keys needed for app integration:
-  - [ ] `background`
-  - [ ] `foreground`
-  - [ ] `caret`
-  - [ ] `selection`
-  - [ ] `selectionForeground`
-  - [ ] `lineHighlight`
-  - [ ] `gutter`
-  - [ ] `gutterForeground`
-- [ ] Support scope rule settings:
-  - [ ] `foreground`
-  - [ ] `background`
-  - [ ] `fontStyle`
-- [ ] Support color parsing for:
-  - [ ] hex RGB
-  - [ ] hex RGBA
-  - [ ] X11 named colors
-- [ ] Support `fontStyle` values:
-  - [ ] `bold`
-  - [ ] `italic`
+- [x] Support global settings keys needed for app integration:
+  - [x] `background`
+  - [x] `foreground`
+  - [x] `caret`
+  - [x] `selection`
+  - [x] `selectionForeground`
+  - [x] `lineHighlight`
+  - [x] `gutter`
+  - [x] `gutterForeground`
+- [x] Support scope rule settings:
+  - [x] `foreground`
+  - [x] `background`
+  - [x] `fontStyle`
+- [x] Support color parsing for:
+  - [x] hex RGB
+  - [x] hex RGBA
+  - [x] X11 named colors
+- [x] Support `fontStyle` values:
+  - [x] `bold`
+  - [x] `italic`
+  - [x] `underline`
 
 ### Theme Matching and Resolution
 
@@ -197,17 +198,13 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 
 ### Theme Validation and Testing
 
-- [ ] Add fixture `.tmTheme` files for tests
+- [x] Add fixture `.tmTheme` files for tests
 - [x] Add tests for valid theme loading
 - [x] Add tests for malformed theme rejection
-- [ ] Add tests for color parsing:
-  - [ ] RGB hex
-  - [ ] RGBA hex
-  - [ ] X11 named colors
-- [ ] Add tests for scope prefix matching
-- [ ] Add tests for specificity ordering
-- [ ] Add tests for merging globals with matching scope rules
-- [ ] Add tests proving parser output can be styled without parser changes
+- [x] Add tests for color parsing:
+  - [x] RGB hex
+  - [x] RGBA hex
+  - [x] X11 named colors
 - [x] Add tests for scope prefix matching
 - [x] Add tests for specificity ordering
 - [x] Add tests for merging globals with matching scope rules
@@ -224,17 +221,18 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 - [x] [Sources/SyntaxKit/SyntaxParser.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/SyntaxParser.swift)
 - [x] [Sources/SyntaxKit/ThemeLoader.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/ThemeLoader.swift)
 - [x] [Sources/SyntaxKit/ThemeResolver.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/ThemeResolver.swift)
+- [x] [Sources/SyntaxKitCLI/CLI.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKitCLI/CLI.swift)
 - [x] [Sources/SyntaxKitCLI/main.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKitCLI/main.swift)
 - [x] [Tests/SyntaxKitTests/SyntaxKitTests.swift](/Users/gmao/code/SyntaxKit/Tests/SyntaxKitTests/SyntaxKitTests.swift)
+- [x] [Tests/SyntaxKitCLITests/SyntaxKitCLITests.swift](/Users/gmao/code/SyntaxKit/Tests/SyntaxKitCLITests/SyntaxKitCLITests.swift)
 - [x] [languages/JSON.tmLanguage](/Users/gmao/code/SyntaxKit/languages/JSON.tmLanguage)
-- [ ] Theme source files to be added in a future step
+- [x] [themes/Monokai.tmTheme](/Users/gmao/code/SyntaxKit/themes/Monokai.tmTheme)
 
 ## Next TODOs
 
 - [ ] Add more real-world grammar fixtures besides JSON
-- [ ] Add one or more real-world `.tmTheme` fixtures
 - [x] Add one or more real-world `.tmTheme` fixtures
 - [ ] Add CLI snapshot-style output tests
 - [ ] Decide whether to support additional grammar formats beyond plist `.tmLanguage`
 - [ ] Design an incremental parsing API without coupling it to rendering
-- [ ] Decide the exact public style/color model for theme output
+- [x] Decide the exact public style/color model for theme output

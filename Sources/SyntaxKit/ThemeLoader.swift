@@ -2,9 +2,81 @@ import Foundation
 
 public struct ThemeColor: RawRepresentable, Equatable, Sendable, Codable {
     public let rawValue: String
+    public let red: Int?
+    public let green: Int?
+    public let blue: Int?
+    public let alpha: Int?
 
     public init(rawValue: String) {
         self.rawValue = rawValue
+        if let rgba = ThemeColor.parse(rawValue) {
+            self.red = rgba.red
+            self.green = rgba.green
+            self.blue = rgba.blue
+            self.alpha = rgba.alpha
+        } else {
+            self.red = nil
+            self.green = nil
+            self.blue = nil
+            self.alpha = nil
+        }
+    }
+
+    public init?(parsing rawValue: String) {
+        guard let rgba = ThemeColor.parse(rawValue) else { return nil }
+        self.rawValue = rawValue
+        self.red = rgba.red
+        self.green = rgba.green
+        self.blue = rgba.blue
+        self.alpha = rgba.alpha
+    }
+
+    public var rgba: (red: Int, green: Int, blue: Int, alpha: Int)? {
+        guard let red, let green, let blue, let alpha else { return nil }
+        return (red, green, blue, alpha)
+    }
+
+    static func parse(_ rawValue: String) -> (red: Int, green: Int, blue: Int, alpha: Int)? {
+        let normalized = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalized.isEmpty else { return nil }
+
+        if normalized.hasPrefix("#") {
+            let hex = String(normalized.dropFirst())
+            switch hex.count {
+            case 3:
+                let chars = Array(hex)
+                guard let red = expandedHex(chars[0]),
+                      let green = expandedHex(chars[1]),
+                      let blue = expandedHex(chars[2]) else {
+                    return nil
+                }
+                return (red, green, blue, 255)
+            case 4:
+                let chars = Array(hex)
+                guard let red = expandedHex(chars[0]),
+                      let green = expandedHex(chars[1]),
+                      let blue = expandedHex(chars[2]),
+                      let alpha = expandedHex(chars[3]) else {
+                    return nil
+                }
+                return (red, green, blue, alpha)
+            case 6:
+                guard let value = Int(hex, radix: 16) else { return nil }
+                return ((value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF, 255)
+            case 8:
+                guard let value = Int(hex, radix: 16) else { return nil }
+                return ((value >> 24) & 0xFF, (value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF)
+            default:
+                return nil
+            }
+        }
+
+        return x11Colors[normalized.lowercased()]
+    }
+
+    private static func expandedHex(_ character: Character) -> Int? {
+        let repeated = String([character, character])
+        return Int(repeated, radix: 16)
     }
 }
 
@@ -122,14 +194,14 @@ private struct ThemeDecoder {
 
         let gutterDictionary = gutterSettings as? [String: Any]
         return ThemeGlobals(
-            background: color(settings["background"]),
-            foreground: color(settings["foreground"]),
-            caret: color(settings["caret"]),
-            selection: color(settings["selection"]),
-            selectionForeground: color(settings["selectionForeground"]),
-            lineHighlight: color(settings["lineHighlight"]),
-            gutter: color(gutterDictionary?["background"] ?? settings["gutter"]),
-            gutterForeground: color(gutterDictionary?["foreground"] ?? settings["gutterForeground"])
+            background: try color(settings["background"]),
+            foreground: try color(settings["foreground"]),
+            caret: try color(settings["caret"]),
+            selection: try color(settings["selection"]),
+            selectionForeground: try color(settings["selectionForeground"]),
+            lineHighlight: try color(settings["lineHighlight"]),
+            gutter: try color(gutterDictionary?["background"] ?? settings["gutter"]),
+            gutterForeground: try color(gutterDictionary?["foreground"] ?? settings["gutterForeground"])
         )
     }
 
@@ -151,8 +223,8 @@ private struct ThemeDecoder {
         }
 
         let name = dictionary["name"] as? String
-        let foreground = color(settings["foreground"])
-        let background = color(settings["background"])
+        let foreground = try color(settings["foreground"])
+        let background = try color(settings["background"])
         let parsedFontStyles = fontStyles(settings["fontStyle"])
 
         return ThemeRule(
@@ -166,9 +238,12 @@ private struct ThemeDecoder {
         )
     }
 
-    private func color(_ value: Any?) -> ThemeColor? {
+    private func color(_ value: Any?) throws -> ThemeColor? {
         guard let string = value as? String, !string.isEmpty else { return nil }
-        return ThemeColor(rawValue: string)
+        guard let color = ThemeColor(parsing: string) else {
+            throw SyntaxKitError.grammarValidation("Theme contains unsupported color '\(string)'.")
+        }
+        return color
     }
 
     private func fontStyles(_ value: Any?) -> [ThemeFontStyle] {
@@ -182,3 +257,27 @@ private struct ThemeDecoder {
         return styles
     }
 }
+
+private let x11Colors: [String: (red: Int, green: Int, blue: Int, alpha: Int)] = [
+    "aqua": (0, 255, 255, 255),
+    "black": (0, 0, 0, 255),
+    "blue": (0, 0, 255, 255),
+    "brown": (165, 42, 42, 255),
+    "cyan": (0, 255, 255, 255),
+    "fuchsia": (255, 0, 255, 255),
+    "gray": (128, 128, 128, 255),
+    "grey": (128, 128, 128, 255),
+    "green": (0, 128, 0, 255),
+    "lime": (0, 255, 0, 255),
+    "magenta": (255, 0, 255, 255),
+    "maroon": (128, 0, 0, 255),
+    "navy": (0, 0, 128, 255),
+    "olive": (128, 128, 0, 255),
+    "orange": (255, 165, 0, 255),
+    "purple": (128, 0, 128, 255),
+    "red": (255, 0, 0, 255),
+    "silver": (192, 192, 192, 255),
+    "teal": (0, 128, 128, 255),
+    "white": (255, 255, 255, 255),
+    "yellow": (255, 255, 0, 255)
+]

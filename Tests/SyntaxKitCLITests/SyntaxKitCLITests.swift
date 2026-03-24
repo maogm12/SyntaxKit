@@ -48,14 +48,15 @@ import Testing
     #expect(ansi.contains("[1;3;4;38;2;1;2;3;48;2;170;187;204m"))
 }
 
-@Test func cliThemeAnsiRendererIgnoresUnsupportedColors() throws {
+@Test func cliThemeAnsiRendererSupportsNamedColorsAndRejectsInvalidOnes() throws {
     let style = ThemeStyle(
         foreground: ThemeColor(rawValue: "red"),
         background: nil,
         fontStyles: []
     )
-    #expect(ANSIHighlighter.ansiStyle(for: style) == ANSIHighlighter.reset)
-    #expect(ANSIHighlighter.rgb(from: "red") == nil)
+    #expect(ANSIHighlighter.ansiStyle(for: style).contains("[38;2;255;0;0m"))
+    #expect(ANSIHighlighter.rgb(from: "red")?.red == 255)
+    #expect(ANSIHighlighter.rgb(from: "not-a-color") == nil)
     #expect(ANSIHighlighter.rgb(from: "#010203")?.red == 1)
     #expect(ANSIHighlighter.rgb(from: "#01020304")?.blue == 3)
 }
