@@ -6,6 +6,13 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-03-24
+
+### Added
+
+- Added `SyntaxHighlighter` as a renderer-neutral convenience API for combining parsing with theme resolution from grammars, registries, or resolved grammars
+- Added tests covering the new app-facing highlight entry points while keeping library line coverage at 100%
+
 ## [0.5.0] - 2026-03-24
 
 ### Added

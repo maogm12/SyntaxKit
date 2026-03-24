@@ -248,6 +248,22 @@ import Testing
     #expect(themed.contains(where: { $0.scopes.contains("constant.language.simple") && $0.style.foreground?.rawValue == "#202020" }))
 }
 
+@Test func syntaxHighlighterSupportsGrammarRegistryAndResolvedGrammarInputs() throws {
+    let grammar = try GrammarLoader.load(data: Data(simpleNumbersGrammar.utf8))
+    let theme = try ThemeLoader.load(data: Data(simpleHighlightTheme.utf8))
+    let registry = GrammarRegistry(grammars: [grammar])
+    let resolved = try registry.resolve(scopeName: "source.simple")
+
+    let viaRegistry = try SyntaxHighlighter.highlight("12 true", using: "source.simple", registry: registry, theme: theme)
+    let viaGrammar = try SyntaxHighlighter.highlight("12 true", grammar: grammar, theme: theme)
+    let viaResolved = try SyntaxHighlighter.highlight("12 true", resolvedGrammar: resolved, registry: registry, theme: theme)
+
+    #expect(viaRegistry == viaGrammar)
+    #expect(viaGrammar == viaResolved)
+    #expect(viaResolved.contains(where: { $0.scopes.contains("constant.numeric.simple") && $0.style.foreground?.rawValue == "#101010" }))
+    #expect(viaResolved.contains(where: { $0.scopes.contains("constant.language.simple") && $0.style.foreground?.rawValue == "#202020" }))
+}
+
 @Test func themeResolverInternalHelpersCoverNonMatches() throws {
     let rule = ThemeRule(name: "Rule", scopes: ["comment.line"], style: ThemeStyle(foreground: nil, background: nil, fontStyles: []))
     let multiScopeRule = ThemeRule(name: "Multi", scopes: ["constant", "constant.numeric"], style: ThemeStyle(foreground: nil, background: nil, fontStyles: []))

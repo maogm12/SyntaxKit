@@ -183,7 +183,7 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 - [x] Add `ThemeLoader.load(data:)`
 - [ ] Add a theme application API, for example:
   - [x] `ThemeResolver.resolve(spans:using:)`
-  - [ ] or `SyntaxHighlighter.highlight(_:grammar:theme:)`
+  - [x] `SyntaxHighlighter.highlight(_:grammar:theme:)`
 - [ ] Keep the output renderer-neutral so apps can map styled spans into:
   - [ ] `AttributedString`
   - [ ] `NSAttributedString`
@@ -221,6 +221,7 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 - [x] [Sources/SyntaxKit/SyntaxParser.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/SyntaxParser.swift)
 - [x] [Sources/SyntaxKit/ThemeLoader.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/ThemeLoader.swift)
 - [x] [Sources/SyntaxKit/ThemeResolver.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/ThemeResolver.swift)
+- [x] [Sources/SyntaxKit/SyntaxHighlighter.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/SyntaxHighlighter.swift)
 - [x] [Sources/SyntaxKitCLI/CLI.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKitCLI/CLI.swift)
 - [x] [Sources/SyntaxKitCLI/main.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKitCLI/main.swift)
 - [x] [Tests/SyntaxKitTests/SyntaxKitTests.swift](/Users/gmao/code/SyntaxKit/Tests/SyntaxKitTests/SyntaxKitTests.swift)
