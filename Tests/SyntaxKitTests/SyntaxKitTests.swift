@@ -9,6 +9,13 @@ import Testing
     #expect(grammar.repository["array"] != nil)
 }
 
+@Test func loadsINIJSONFixtureGrammar() throws {
+    let fixtureURL = URL(fileURLWithPath: "/Users/gmao/code/SyntaxKit/languages/INI.tmLanguage.json")
+    let grammar = try GrammarLoader.load(from: fixtureURL)
+    #expect(grammar.scopeName.rawValue == "source.ini")
+    #expect(grammar.patterns.isEmpty == false)
+}
+
 @Test func loadsMonokaiThemeFixture() throws {
     let fixtureURL = URL(fileURLWithPath: "/Users/gmao/code/SyntaxKit/themes/Monokai.tmTheme")
     let theme = try ThemeLoader.load(from: fixtureURL)
@@ -305,7 +312,15 @@ import Testing
     </array>
     </plist>
     """
-    try expectSyntaxKitError(plist: plist, containing: "Top-level grammar plist")
+    try expectSyntaxKitError(plist: plist, containing: "Top-level grammar document")
+}
+
+@Test func rejectsTopLevelArrayJSONGrammar() throws {
+    try expectSyntaxKitError(plist: """
+    [
+      "not a dictionary"
+    ]
+    """, containing: "Top-level grammar document")
 }
 
 @Test func rejectsInvalidRepositoryEntryType() throws {
@@ -523,6 +538,21 @@ import Testing
     #expect(result.spans.contains(where: { $0.scopes.contains("string.quoted.double.json") }))
     #expect(result.spans.contains(where: { $0.scopes.contains("constant.language.json") }))
     #expect(result.spans.contains(where: { $0.scopes.contains("constant.numeric.json") }))
+}
+
+@Test func parsesINIFixture() throws {
+    let fixtureURL = URL(fileURLWithPath: "/Users/gmao/code/SyntaxKit/languages/INI.tmLanguage.json")
+    let grammar = try GrammarLoader.load(from: fixtureURL)
+    let registry = GrammarRegistry(grammars: [grammar])
+    let parser = SyntaxParser(registry: registry)
+    let sample = """
+    [section]
+    name=value
+    ; comment
+    """
+    let result = try parser.parse(sample, using: "source.ini")
+    #expect(result.spans.contains(where: { $0.scopes.contains("entity.name.section.group-title.ini") }))
+    #expect(result.spans.contains(where: { $0.scopes.contains("keyword.other.definition.ini") }))
 }
 
 @Test func parsesJSONClosingBraceWithDelimiterScope() throws {

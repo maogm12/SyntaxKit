@@ -124,7 +124,7 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 - [x] Use UTF-16 offsets plus line/column metadata in public spans
 - [x] Keep theme/render logic decoupled from parsing in the core library
 - [ ] Add incremental parsing support in a future iteration
-- [ ] Add broader fixture coverage beyond JSON
+- [x] Add broader fixture coverage beyond JSON
 - [x] Add tmTheme loading, matching, and style resolution
 - [ ] Consider richer renderer adapters outside the core library
 
@@ -133,7 +133,7 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 ### Theme Model and Loading
 
 - [x] Add a `ThemeLoader` for plist-based `.tmTheme` files
-- [ ] Define public theme types:
+- [x] Define public theme types:
   - [x] `Theme`
   - [x] `ThemeGlobals`
   - [x] `ThemeRule`
@@ -181,7 +181,7 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 
 - [x] Add `ThemeLoader.load(from:)`
 - [x] Add `ThemeLoader.load(data:)`
-- [ ] Add a theme application API, for example:
+- [x] Add a theme application API, for example:
   - [x] `ThemeResolver.resolve(spans:using:)`
   - [x] `SyntaxHighlighter.highlight(_:grammar:theme:)`
 - [ ] Keep the output renderer-neutral so apps can map styled spans into:
@@ -227,13 +227,14 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 - [x] [Tests/SyntaxKitTests/SyntaxKitTests.swift](/Users/gmao/code/SyntaxKit/Tests/SyntaxKitTests/SyntaxKitTests.swift)
 - [x] [Tests/SyntaxKitCLITests/SyntaxKitCLITests.swift](/Users/gmao/code/SyntaxKit/Tests/SyntaxKitCLITests/SyntaxKitCLITests.swift)
 - [x] [languages/JSON.tmLanguage](/Users/gmao/code/SyntaxKit/languages/JSON.tmLanguage)
+- [x] [languages/INI.tmLanguage.json](/Users/gmao/code/SyntaxKit/languages/INI.tmLanguage.json)
 - [x] [themes/Monokai.tmTheme](/Users/gmao/code/SyntaxKit/themes/Monokai.tmTheme)
 
 ## Next TODOs
 
-- [ ] Add more real-world grammar fixtures besides JSON
+- [x] Add more real-world grammar fixtures besides JSON
 - [x] Add one or more real-world `.tmTheme` fixtures
 - [ ] Add CLI snapshot-style output tests
-- [ ] Decide whether to support additional grammar formats beyond plist `.tmLanguage`
+- [x] Decide whether to support additional grammar formats beyond plist `.tmLanguage`
 - [ ] Design an incremental parsing API without coupling it to rendering
 - [x] Decide the exact public style/color model for theme output

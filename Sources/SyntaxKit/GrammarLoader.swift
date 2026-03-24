@@ -7,12 +7,24 @@ public enum GrammarLoader {
     }
 
     public static func load(data: Data) throws -> Grammar {
-        let plist = try PropertyListSerialization.propertyList(from: data, options: [], format: nil)
-        guard let dictionary = plist as? [String: Any] else {
-            throw SyntaxKitError.grammarLoading("Top-level grammar plist must be a dictionary.")
-        }
+        let dictionary = try decodeDictionary(from: data)
         var decoder = GrammarDecoder(dictionary: dictionary)
         return try decoder.decode()
+    }
+
+    private static func decodeDictionary(from data: Data) throws -> [String: Any] {
+        if let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) {
+            guard let dictionary = plist as? [String: Any] else {
+                throw SyntaxKitError.grammarLoading("Top-level grammar document must be a dictionary.")
+            }
+            return dictionary
+        }
+
+        let json = try JSONSerialization.jsonObject(with: data)
+        guard let dictionary = json as? [String: Any] else {
+            throw SyntaxKitError.grammarLoading("Top-level grammar document must be a dictionary.")
+        }
+        return dictionary
     }
 }
 

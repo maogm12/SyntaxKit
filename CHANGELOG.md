@@ -6,6 +6,13 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-03-24
+
+### Added
+
+- Added automatic JSON grammar loading alongside plist `.tmLanguage` loading
+- Added a real INI grammar fixture in JSON format and parser coverage against it
+
 ## [0.6.0] - 2026-03-24
 
 ### Added
