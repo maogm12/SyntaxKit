@@ -6,6 +6,14 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-03-24
+
+### Added
+
+- Added an Xcode macOS app project for `Examples/SyntaxKitDemo` so the demo can be launched as a normal `.app` bundle instead of only through `swift run`
+- Shared the existing demo SwiftUI sources and resources with the Xcode app target and updated resource loading so the demo works under both SwiftPM and Xcode
+- Updated the README to recommend opening the demo app project in Xcode for normal desktop app behavior
+
 ## [1.2.0] - 2026-03-24
 
 ### Added

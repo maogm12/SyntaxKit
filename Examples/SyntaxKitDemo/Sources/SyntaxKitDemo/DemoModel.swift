@@ -33,7 +33,7 @@ final class DemoModel: ObservableObject {
     }
 
     private func resourceURL(named name: String) throws -> URL {
-        guard let url = Bundle.module.url(forResource: name, withExtension: nil) else {
+        guard let url = demoResourceBundle.url(forResource: name, withExtension: nil) else {
             throw SyntaxKitError.parsing("Missing demo resource '\(name)'.")
         }
         return url
@@ -137,6 +137,14 @@ final class DemoModel: ObservableObject {
         }
     }
 }
+
+private let demoResourceBundle: Bundle = {
+#if SWIFT_PACKAGE
+    return .module
+#else
+    return .main
+#endif
+}()
 
 extension DemoModel {
     func updateSource(_ value: String) {

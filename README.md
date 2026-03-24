@@ -14,7 +14,7 @@ It can:
 
 ## Status
 
-`SyntaxKit` is currently at `1.0.0`.
+`SyntaxKit` is currently at `1.3.0`.
 
 The implementation in this repo covers the v1 plan in [plan.md](/Users/gmao/code/SyntaxKit/plan.md).
 
@@ -32,15 +32,18 @@ It demonstrates:
 - scope inspection
 - incremental line-state tracking
 
-Build it with:
+Open it in Xcode and run the `SyntaxKitDemoApp` scheme:
+
+```bash
+open Examples/SyntaxKitDemo/SyntaxKitDemoApp.xcodeproj
+```
+
+This launches as a normal macOS app bundle, so input focus stays in the app instead of Terminal.
+
+If you want the older SwiftPM-hosted version for quick iteration, you can still build and run it with:
 
 ```bash
 swift build --package-path Examples/SyntaxKitDemo
-```
-
-Run it with:
-
-```bash
 swift run --package-path Examples/SyntaxKitDemo
 ```
 
