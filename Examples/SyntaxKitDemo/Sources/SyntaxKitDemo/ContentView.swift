@@ -23,7 +23,7 @@ struct ContentView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text("SyntaxKit Demo")
                     .font(.system(size: 24, weight: .semibold, design: .rounded))
-                Text("Edit JSON on the left. The preview, scopes, and line-state snapshots update using the local SyntaxKit library.")
+                Text("Edit text on the left. Switch grammars and themes or load your own files to see the local SyntaxKit library reparse in place.")
                     .foregroundStyle(.secondary)
             }
             Spacer()
@@ -31,6 +31,9 @@ struct ContentView: View {
                 Label(model.statusText, systemImage: model.errorMessage == nil ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                     .foregroundStyle(model.errorMessage == nil ? .green : .orange)
                 Text("Spans: \(model.themedSpans.count)  |  Line States: \(model.lineStates.count)")
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                Text("Grammar: \(model.grammarScopeName)  |  Theme: \(model.themeName)")
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(.secondary)
             }
@@ -41,8 +44,31 @@ struct ContentView: View {
 
     private var editorPane: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Input")
-                .font(.headline)
+            HStack {
+                Text("Input")
+                    .font(.headline)
+                Spacer()
+                Menu("Grammar") {
+                    ForEach(DemoAsset.allCases) { asset in
+                        Button(asset.displayName) {
+                            try? model.loadBundledGrammar(asset)
+                        }
+                    }
+                    Divider()
+                    Button("Load Grammar File...") {
+                        model.importGrammar()
+                    }
+                }
+                Menu("Theme") {
+                    Button("Monokai") {
+                        try? model.loadBundledTheme()
+                    }
+                    Divider()
+                    Button("Load Theme File...") {
+                        model.importTheme()
+                    }
+                }
+            }
             TextEditor(text: Binding(
                 get: { model.sourceText },
                 set: { model.updateSource($0) }
@@ -56,7 +82,7 @@ struct ContentView: View {
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(.orange)
             } else {
-                Text("Theme: Monokai  |  Grammar: source.json")
+                Text("Theme: \(model.themeName)  |  Grammar: \(model.grammarName)")
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(.secondary)
             }

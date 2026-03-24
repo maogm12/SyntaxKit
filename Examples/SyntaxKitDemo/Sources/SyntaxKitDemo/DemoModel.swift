@@ -2,26 +2,18 @@ import AppKit
 import Combine
 import Foundation
 import SyntaxKit
+import UniformTypeIdentifiers
 
 @MainActor
 final class DemoModel: ObservableObject {
-    @Published var sourceText = """
-    {
-      "name": "SyntaxKit",
-      "version": "1.0.0",
-      "features": [
-        "tmLanguage",
-        "tmTheme",
-        "incremental parsing"
-      ],
-      "active": true,
-      "stars": 5
-    }
-    """
+    @Published var sourceText = DemoAsset.jsonSample
     @Published private(set) var preview = NSAttributedString(string: "")
     @Published private(set) var themedSpans: [ThemedSpan] = []
     @Published private(set) var lineStates: [SyntaxLineState] = []
     @Published private(set) var errorMessage: String?
+    @Published private(set) var grammarName = "JSON"
+    @Published private(set) var grammarScopeName = "source.json"
+    @Published private(set) var themeName = "Monokai"
 
     private var parser: SyntaxParser?
     private var theme: Theme?
@@ -32,13 +24,8 @@ final class DemoModel: ObservableObject {
 
     func load() async {
         do {
-            let grammarURL = try resourceURL(named: "JSON.tmLanguage")
-            let themeURL = try resourceURL(named: "Monokai.tmTheme")
-            let grammar = try GrammarLoader.load(from: grammarURL)
-            let registry = GrammarRegistry(grammars: [grammar])
-            parser = SyntaxParser(registry: registry)
-            theme = try ThemeLoader.load(from: themeURL)
-            render()
+            try loadBundledGrammar(.json, replaceSource: false)
+            try loadBundledTheme()
         } catch {
             errorMessage = String(describing: error)
             preview = NSAttributedString(string: "")
@@ -55,7 +42,7 @@ final class DemoModel: ObservableObject {
     private func render() {
         guard let parser, let theme else { return }
         do {
-            let incremental = try parser.parseIncrementally(sourceText, using: "source.json")
+            let incremental = try parser.parseIncrementally(sourceText, using: grammarScopeName)
             let spans = ThemeResolver.resolve(result: incremental.parseResult, using: theme)
             themedSpans = spans
             lineStates = incremental.lineStates
@@ -87,6 +74,68 @@ final class DemoModel: ObservableObject {
             self?.render()
         }
     }
+
+    func loadBundledGrammar(_ asset: DemoAsset, replaceSource: Bool = true) throws {
+        let grammarURL = try resourceURL(named: asset.grammarResourceName)
+        let grammar = try GrammarLoader.load(from: grammarURL)
+        let registry = GrammarRegistry(grammars: [grammar])
+        parser = SyntaxParser(registry: registry)
+        grammarName = asset.displayName
+        grammarScopeName = grammar.scopeName.rawValue
+        if replaceSource {
+            sourceText = asset.sampleText
+        }
+        render()
+    }
+
+    func loadBundledTheme() throws {
+        let themeURL = try resourceURL(named: "Monokai.tmTheme")
+        theme = try ThemeLoader.load(from: themeURL)
+        themeName = "Monokai"
+        render()
+    }
+
+    func importGrammar() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [
+            UTType(filenameExtension: "tmLanguage") ?? .data,
+            UTType.json
+        ]
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.prompt = "Load Grammar"
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            let grammar = try GrammarLoader.load(from: url)
+            let registry = GrammarRegistry(grammars: [grammar])
+            parser = SyntaxParser(registry: registry)
+            grammarName = url.lastPathComponent
+            grammarScopeName = grammar.scopeName.rawValue
+            render()
+        } catch {
+            errorMessage = String(describing: error)
+        }
+    }
+
+    func importTheme() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [
+            UTType(filenameExtension: "tmTheme") ?? .data
+        ]
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.prompt = "Load Theme"
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            theme = try ThemeLoader.load(from: url)
+            themeName = url.lastPathComponent
+            render()
+        } catch {
+            errorMessage = String(describing: error)
+        }
+    }
 }
 
 extension DemoModel {
@@ -94,6 +143,62 @@ extension DemoModel {
         sourceText = value
         scheduleRender()
     }
+}
+
+enum DemoAsset: String, CaseIterable, Identifiable {
+    case json
+    case ini
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .json:
+            return "JSON"
+        case .ini:
+            return "INI"
+        }
+    }
+
+    var grammarResourceName: String {
+        switch self {
+        case .json:
+            return "JSON.tmLanguage"
+        case .ini:
+            return "INI.tmLanguage.json"
+        }
+    }
+
+    var sampleText: String {
+        switch self {
+        case .json:
+            return Self.jsonSample
+        case .ini:
+            return Self.iniSample
+        }
+    }
+
+    static let jsonSample = """
+    {
+      "name": "SyntaxKit",
+      "version": "1.1.0",
+      "features": [
+        "tmLanguage",
+        "tmTheme",
+        "incremental parsing"
+      ],
+      "active": true,
+      "stars": 5
+    }
+    """
+
+    static let iniSample = """
+    [syntaxkit]
+    name=SyntaxKit
+    theme=Monokai
+    incremental=true
+    ; change the grammar or load your own file
+    """
 }
 
 private enum DemoRenderer {

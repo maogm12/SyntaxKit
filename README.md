@@ -26,6 +26,8 @@ It demonstrates:
 
 - grammar loading
 - tmTheme loading
+- bundled grammar switching for JSON and INI
+- custom grammar and theme file loading
 - live parsing and themed preview
 - scope inspection
 - incremental line-state tracking

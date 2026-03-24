@@ -6,6 +6,13 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-03-24
+
+### Added
+
+- Extended the macOS demo app so users can switch between bundled JSON and INI grammars and load custom grammar and theme files at runtime
+- Updated the README demo section to mention the new language and theme loading behavior
+
 ## [1.1.0] - 2026-03-24
 
 ### Added
