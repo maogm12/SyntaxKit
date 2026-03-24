@@ -123,7 +123,7 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 - [x] Use `NSRegularExpression` behind an internal regex helper
 - [x] Use UTF-16 offsets plus line/column metadata in public spans
 - [x] Keep theme/render logic decoupled from parsing in the core library
-- [ ] Add incremental parsing support in a future iteration
+- [x] Add incremental parsing support in a future iteration
 - [x] Add broader fixture coverage beyond JSON
 - [x] Add tmTheme loading, matching, and style resolution
 - [x] Consider richer renderer adapters outside the core library
@@ -237,5 +237,5 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 - [x] Add one or more real-world `.tmTheme` fixtures
 - [x] Add CLI snapshot-style output tests
 - [x] Decide whether to support additional grammar formats beyond plist `.tmLanguage`
-- [ ] Design an incremental parsing API without coupling it to rendering
+- [x] Design an incremental parsing API without coupling it to rendering
 - [x] Decide the exact public style/color model for theme output

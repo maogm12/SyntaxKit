@@ -20,31 +20,89 @@ public final class SyntaxParser {
     }
 
     public func parse(_ text: String, using resolvedGrammar: ResolvedGrammar? = nil) throws -> ParseResult {
+        try parseIncrementally(text, using: resolvedGrammar).parseResult
+    }
+
+    public func parseIncrementally(_ text: String, using scopeName: String) throws -> IncrementalParseResult {
+        let resolved = try registry.resolve(scopeName: scopeName)
+        return try parseIncrementally(text, using: resolved)
+    }
+
+    public func parseIncrementally(_ text: String, using resolvedGrammar: ResolvedGrammar? = nil) throws -> IncrementalParseResult {
         guard let resolvedGrammar = resolvedGrammar ?? defaultGrammar else {
             throw SyntaxKitError.parsing("No grammar provided for parse request.")
         }
 
+        return try parseCore(
+            text,
+            using: resolvedGrammar,
+            startingAtLine: 1,
+            startingUTF16Offset: 0,
+            initialContexts: []
+        )
+    }
+
+    public func reparse(_ text: String, using scopeName: String, from lineState: SyntaxLineState) throws -> IncrementalParseResult {
+        let resolved = try registry.resolve(scopeName: scopeName)
+        return try reparse(text, using: resolved, from: lineState)
+    }
+
+    public func reparse(
+        _ text: String,
+        using resolvedGrammar: ResolvedGrammar? = nil,
+        from lineState: SyntaxLineState
+    ) throws -> IncrementalParseResult {
+        guard let resolvedGrammar = resolvedGrammar ?? defaultGrammar else {
+            throw SyntaxKitError.parsing("No grammar provided for parse request.")
+        }
+
+        return try parseCore(
+            text,
+            using: resolvedGrammar,
+            startingAtLine: lineState.line + 1,
+            startingUTF16Offset: lineState.nextUTF16Offset,
+            initialContexts: try restoreContexts(from: lineState.contexts)
+        )
+    }
+
+    public func tokenizeIncrementally(_ text: String, using scopeName: String) throws -> IncrementalParseResult {
+        try parseIncrementally(text, using: scopeName)
+    }
+
+    private func parseCore(
+        _ text: String,
+        using resolvedGrammar: ResolvedGrammar,
+        startingAtLine: Int,
+        startingUTF16Offset: Int,
+        initialContexts: [ContextFrame]
+    ) throws -> IncrementalParseResult {
         var builder = SpanBuilder()
-        var contexts: [ContextFrame] = []
+        var contexts = initialContexts
+        var lineStates: [SyntaxLineState] = []
         let lines = splitLines(text)
         let rootScopes = [resolvedGrammar.scopeName.rawValue]
 
         for lineInfo in lines {
+            let absoluteLineInfo = LineInfo(
+                number: lineInfo.number + startingAtLine - 1,
+                startUTF16: lineInfo.startUTF16 + startingUTF16Offset,
+                text: lineInfo.text
+            )
             var cursor = 0
-            let lineLength = lineInfo.textUTF16Length
+            let lineLength = absoluteLineInfo.textUTF16Length
 
             while cursor < lineLength {
                 let activeScopes = contexts.last?.contentScopes ?? rootScopes
                 guard let candidate = try bestCandidate(
-                    in: lineInfo.text,
+                    in: absoluteLineInfo.text,
                     at: cursor,
                     contexts: contexts,
                     rootGrammar: resolvedGrammar.grammar
                 ) else {
                     builder.add(
-                        start: lineInfo.startUTF16 + cursor,
-                        end: lineInfo.startUTF16 + lineLength,
-                        line: lineInfo.number,
+                        start: absoluteLineInfo.startUTF16 + cursor,
+                        end: absoluteLineInfo.startUTF16 + lineLength,
+                        line: absoluteLineInfo.number,
                         column: cursor + 1,
                         scopes: activeScopes
                     )
@@ -54,9 +112,9 @@ public final class SyntaxParser {
 
                 if candidate.start > cursor {
                     builder.add(
-                        start: lineInfo.startUTF16 + cursor,
-                        end: lineInfo.startUTF16 + candidate.start,
-                        line: lineInfo.number,
+                        start: absoluteLineInfo.startUTF16 + cursor,
+                        end: absoluteLineInfo.startUTF16 + candidate.start,
+                        line: absoluteLineInfo.number,
                         column: cursor + 1,
                         scopes: activeScopes
                     )
@@ -70,7 +128,7 @@ public final class SyntaxParser {
                     let scopes = context.delimiterScopes
                     emitSegmentedMatch(
                         builder: &builder,
-                        lineInfo: lineInfo,
+                        lineInfo: absoluteLineInfo,
                         match: match,
                         baseScopes: scopes,
                         captures: context.rule.effectiveEndCaptures
@@ -86,7 +144,7 @@ public final class SyntaxParser {
                     let scopes = activeScopes + scopeComponents(from: rule.name)
                     emitSegmentedMatch(
                         builder: &builder,
-                        lineInfo: lineInfo,
+                        lineInfo: absoluteLineInfo,
                         match: match,
                         baseScopes: scopes,
                         captures: rule.captures
@@ -96,7 +154,7 @@ public final class SyntaxParser {
                     let delimiterScopes = activeScopes + scopeComponents(from: rule.name)
                     emitSegmentedMatch(
                         builder: &builder,
-                        lineInfo: lineInfo,
+                        lineInfo: absoluteLineInfo,
                         match: match,
                         baseScopes: delimiterScopes,
                         captures: rule.effectiveBeginCaptures
@@ -105,7 +163,7 @@ public final class SyntaxParser {
                     let resolvedEnd = substituteBackreferences(
                         pattern: rule.end!,
                         using: match,
-                        in: lineInfo.text
+                        in: absoluteLineInfo.text
                     )
                     let endRegex = try registry.compiledRegex(for: resolvedEnd)
                     let contentScopes = delimiterScopes + scopeComponents(from: rule.contentName)
@@ -113,6 +171,7 @@ public final class SyntaxParser {
                         ContextFrame(
                             rule: rule,
                             grammar: grammar,
+                            endPattern: resolvedEnd,
                             endRegex: endRegex,
                             delimiterScopes: delimiterScopes,
                             contentScopes: contentScopes.isEmpty ? delimiterScopes : contentScopes
@@ -121,13 +180,79 @@ public final class SyntaxParser {
                     cursor = match.range.length == 0 ? min(cursor + 1, lineLength) : match.range.location + match.range.length
                 }
             }
+
+            lineStates.append(
+                SyntaxLineState(
+                    line: absoluteLineInfo.number,
+                    nextUTF16Offset: absoluteLineInfo.startUTF16 + lineLength,
+                    contexts: contexts.map(snapshot(from:))
+                )
+            )
         }
 
-        return ParseResult(scopeName: resolvedGrammar.scopeName, spans: builder.spans, diagnostics: [])
+        return IncrementalParseResult(
+            parseResult: ParseResult(scopeName: resolvedGrammar.scopeName, spans: builder.spans, diagnostics: []),
+            lineStates: lineStates
+        )
     }
 
     public func tokenize(_ text: String, using scopeName: String) throws -> [SyntaxSpan] {
         try parse(text, using: scopeName).spans
+    }
+
+    private func snapshot(from context: ContextFrame) -> SyntaxContextSnapshot {
+        SyntaxContextSnapshot(
+            grammarScopeName: context.grammar.scopeName,
+            ruleID: context.rule.id,
+            endPattern: context.endPattern,
+            delimiterScopes: context.delimiterScopes,
+            contentScopes: context.contentScopes
+        )
+    }
+
+    private func restoreContexts(from snapshots: [SyntaxContextSnapshot]) throws -> [ContextFrame] {
+        try snapshots.map { snapshot in
+            guard let grammar = registry.grammar(for: snapshot.grammarScopeName.rawValue) else {
+                throw SyntaxKitError.parsing("Missing grammar '\(snapshot.grammarScopeName.rawValue)' for incremental parse state.")
+            }
+            guard let rule = findRule(withID: snapshot.ruleID, in: grammar) else {
+                throw SyntaxKitError.parsing("Missing rule \(snapshot.ruleID) in grammar '\(snapshot.grammarScopeName.rawValue)' for incremental parse state.")
+            }
+            return ContextFrame(
+                rule: rule,
+                grammar: grammar,
+                endPattern: snapshot.endPattern,
+                endRegex: try registry.compiledRegex(for: snapshot.endPattern),
+                delimiterScopes: snapshot.delimiterScopes,
+                contentScopes: snapshot.contentScopes
+            )
+        }
+    }
+
+    private func findRule(withID id: Int, in grammar: Grammar) -> Rule? {
+        for rule in grammar.patterns {
+            if let found = findRule(withID: id, in: rule) {
+                return found
+            }
+        }
+        for rule in grammar.repository.values {
+            if let found = findRule(withID: id, in: rule) {
+                return found
+            }
+        }
+        return nil
+    }
+
+    private func findRule(withID id: Int, in rule: Rule) -> Rule? {
+        if rule.id == id {
+            return rule
+        }
+        for nested in rule.patterns {
+            if let found = findRule(withID: id, in: nested) {
+                return found
+            }
+        }
+        return nil
     }
 
     private func bestCandidate(
@@ -236,6 +361,7 @@ private struct ResolvedRule {
 private struct ContextFrame {
     let rule: Rule
     let grammar: Grammar
+    let endPattern: String
     let endRegex: NSRegularExpression
     let delimiterScopes: [String]
     let contentScopes: [String]

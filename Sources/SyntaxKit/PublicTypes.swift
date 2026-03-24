@@ -156,6 +156,52 @@ public struct ParseResult: Codable, Equatable, Sendable {
     }
 }
 
+public struct SyntaxContextSnapshot: Codable, Equatable, Sendable {
+    public let grammarScopeName: ScopeName
+    public let ruleID: Int
+    public let endPattern: String
+    public let delimiterScopes: [String]
+    public let contentScopes: [String]
+
+    public init(
+        grammarScopeName: ScopeName,
+        ruleID: Int,
+        endPattern: String,
+        delimiterScopes: [String],
+        contentScopes: [String]
+    ) {
+        self.grammarScopeName = grammarScopeName
+        self.ruleID = ruleID
+        self.endPattern = endPattern
+        self.delimiterScopes = delimiterScopes
+        self.contentScopes = contentScopes
+    }
+}
+
+public struct SyntaxLineState: Codable, Equatable, Sendable {
+    public let line: Int
+    public let nextUTF16Offset: Int
+    public let contexts: [SyntaxContextSnapshot]
+
+    public init(line: Int, nextUTF16Offset: Int, contexts: [SyntaxContextSnapshot]) {
+        self.line = line
+        self.nextUTF16Offset = nextUTF16Offset
+        self.contexts = contexts
+    }
+
+    public static let initial = SyntaxLineState(line: 0, nextUTF16Offset: 0, contexts: [])
+}
+
+public struct IncrementalParseResult: Equatable, Sendable {
+    public let parseResult: ParseResult
+    public let lineStates: [SyntaxLineState]
+
+    public init(parseResult: ParseResult, lineStates: [SyntaxLineState]) {
+        self.parseResult = parseResult
+        self.lineStates = lineStates
+    }
+}
+
 public enum IncludeReference: Equatable, Sendable {
     case repository(String)
     case `self`

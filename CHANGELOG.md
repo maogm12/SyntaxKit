@@ -6,6 +6,13 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-03-24
+
+### Added
+
+- Added incremental parsing support with `IncrementalParseResult`, resumable `SyntaxLineState` snapshots, and parser reparse APIs that resume from saved line context
+- Added incremental parsing tests covering saved-state replay, invalid state handling, and rule lookup restoration
+
 ## [0.9.0] - 2026-03-24
 
 ### Added

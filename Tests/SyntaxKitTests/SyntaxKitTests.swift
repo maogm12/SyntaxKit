@@ -630,6 +630,135 @@ func styledTextAdapterSupportsEmptyInputs() throws {
     #expect(result.spans.isEmpty)
 }
 
+@Test func incrementalParsingCapturesLineStatesAndSupportsReparse() throws {
+    let fixtureURL = URL(fileURLWithPath: "/Users/gmao/code/SyntaxKit/languages/JSON.tmLanguage")
+    let grammar = try GrammarLoader.load(from: fixtureURL)
+    let registry = GrammarRegistry(grammars: [grammar])
+    let parser = SyntaxParser(registry: registry)
+    let sample = """
+    {
+      "ok": true
+    }
+    """
+
+    let incremental = try parser.parseIncrementally(sample, using: "source.json")
+    #expect(incremental.lineStates.count == 3)
+    #expect(SyntaxLineState.initial.line == 0)
+    let firstLineState = try #require(incremental.lineStates.first)
+    #expect(firstLineState.contexts.isEmpty == false)
+
+    let suffix = """
+      "ok": true
+    }
+    """
+    let reparsed = try parser.reparse(suffix, using: "source.json", from: firstLineState)
+    let expectedSuffixSpans = incremental.parseResult.spans.filter { $0.startUTF16 >= firstLineState.nextUTF16Offset }
+    #expect(reparsed.parseResult.spans == expectedSuffixSpans)
+
+    let tokenized = try parser.tokenizeIncrementally(sample, using: "source.json")
+    #expect(tokenized.parseResult.spans == incremental.parseResult.spans)
+}
+
+@Test func incrementalParsingRejectsInvalidSavedStates() throws {
+    let grammar = try GrammarLoader.load(data: Data(simpleNumbersGrammar.utf8))
+    let registry = GrammarRegistry(grammars: [grammar])
+    let parser = SyntaxParser(registry: registry)
+
+    do {
+        _ = try parser.reparse(
+            "true",
+            using: "source.simple",
+            from: SyntaxLineState(
+                line: 1,
+                nextUTF16Offset: 0,
+                contexts: [
+                    SyntaxContextSnapshot(
+                        grammarScopeName: ScopeName(rawValue: "missing.scope"),
+                        ruleID: 99,
+                        endPattern: "x",
+                        delimiterScopes: [],
+                        contentScopes: []
+                    )
+                ]
+            )
+        )
+        Issue.record("Expected reparse to fail when the saved grammar is missing.")
+    } catch let error as SyntaxKitError {
+        #expect(error.description.contains("Missing grammar"))
+    }
+
+    do {
+        _ = try parser.reparse(
+            "true",
+            using: "source.simple",
+            from: SyntaxLineState(
+                line: 1,
+                nextUTF16Offset: 0,
+                contexts: [
+                    SyntaxContextSnapshot(
+                        grammarScopeName: ScopeName(rawValue: "source.simple"),
+                        ruleID: 999,
+                        endPattern: "x",
+                        delimiterScopes: [],
+                        contentScopes: []
+                    )
+                ]
+            )
+        )
+        Issue.record("Expected reparse to fail when the saved rule is missing.")
+    } catch let error as SyntaxKitError {
+        #expect(error.description.contains("Missing rule"))
+    }
+}
+
+@Test func incrementalParsingCoversDefaultGrammarAndRuleLookupPaths() throws {
+    let parserWithoutDefault = SyntaxParser(registry: GrammarRegistry())
+    do {
+        _ = try parserWithoutDefault.reparse("value", from: .initial)
+        Issue.record("Expected reparse without a grammar to fail.")
+    } catch let error as SyntaxKitError {
+        #expect(error.description.contains("No grammar provided"))
+    }
+
+    let iniGrammar = try GrammarLoader.load(from: URL(fileURLWithPath: "/Users/gmao/code/SyntaxKit/languages/INI.tmLanguage.json"))
+    let registry = GrammarRegistry(grammars: [iniGrammar])
+    let parser = SyntaxParser(registry: registry)
+
+    let topRule = try #require(iniGrammar.patterns.first)
+    let topState = SyntaxLineState(
+        line: 1,
+        nextUTF16Offset: 0,
+        contexts: [
+            SyntaxContextSnapshot(
+                grammarScopeName: iniGrammar.scopeName,
+                ruleID: topRule.id,
+                endPattern: topRule.end ?? "(?!\\G)",
+                delimiterScopes: ["source.ini"],
+                contentScopes: ["source.ini"]
+            )
+        ]
+    )
+    let topReparse = try parser.reparse("# note\n", using: "source.ini", from: topState)
+    #expect(topReparse.parseResult.spans.isEmpty == false)
+
+    let nestedRule = try #require(topRule.patterns.first)
+    let nestedState = SyntaxLineState(
+        line: 1,
+        nextUTF16Offset: 0,
+        contexts: [
+            SyntaxContextSnapshot(
+                grammarScopeName: iniGrammar.scopeName,
+                ruleID: nestedRule.id,
+                endPattern: nestedRule.end ?? "\\n",
+                delimiterScopes: ["source.ini", "comment.line.number-sign.ini"],
+                contentScopes: ["source.ini", "comment.line.number-sign.ini"]
+            )
+        ]
+    )
+    let nestedReparse = try parser.reparse(" comment\n", using: "source.ini", from: nestedState)
+    #expect(nestedReparse.parseResult.spans.isEmpty == false)
+}
+
 @Test func parserRejectsMissingDefaultGrammar() throws {
     let parser = SyntaxParser(registry: GrammarRegistry())
     do {
