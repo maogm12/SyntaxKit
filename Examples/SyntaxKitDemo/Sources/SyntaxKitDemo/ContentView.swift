@@ -100,7 +100,7 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Preview")
                 .font(.headline)
-            HighlightingTextView(attributedString: model.preview)
+            HighlightingTextView(attributedString: model.preview, backgroundColor: model.previewBackgroundColor)
                 .border(Color.secondary.opacity(0.2))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             Text("Scopes")

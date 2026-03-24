@@ -6,6 +6,12 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-03-24
+
+### Fixed
+
+- Applied the loaded tmTheme global `background` color to the demo preview text view so the whole preview pane matches the active theme instead of only span backgrounds
+
 ## [1.6.0] - 2026-03-24
 
 ### Added

@@ -16,6 +16,7 @@ final class DemoModel: ObservableObject {
     @Published private(set) var grammarName = "JSON"
     @Published private(set) var grammarScopeName = "source.json"
     @Published private(set) var themeName = "Sample Dark"
+    @Published private(set) var previewBackgroundColor = NSColor.textBackgroundColor
 
     private var parser: SyntaxParser?
     private var theme: Theme?
@@ -52,6 +53,7 @@ final class DemoModel: ObservableObject {
             let spans = ThemeResolver.resolve(result: incremental.parseResult, using: theme)
             themedSpans = spans
             lineStates = incremental.lineStates
+            previewBackgroundColor = DemoRenderer.color(from: theme.globals.background) ?? .textBackgroundColor
             preview = DemoRenderer.render(text: sourceText, spans: spans)
             renderDurationMilliseconds = (CFAbsoluteTimeGetCurrent() - renderStart) * 1000
             errorMessage = nil
@@ -60,6 +62,7 @@ final class DemoModel: ObservableObject {
             lineStates = []
             parseDurationMilliseconds = 0
             renderDurationMilliseconds = 0
+            previewBackgroundColor = .textBackgroundColor
             preview = NSAttributedString(string: sourceText)
             errorMessage = String(describing: error)
         }
@@ -288,7 +291,7 @@ private enum DemoRenderer {
         return output
     }
 
-    private static func color(from themeColor: ThemeColor?) -> NSColor? {
+    static func color(from themeColor: ThemeColor?) -> NSColor? {
         guard let rgba = themeColor?.rgba else { return nil }
         return NSColor(
             calibratedRed: CGFloat(rgba.red) / 255.0,
