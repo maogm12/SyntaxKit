@@ -6,6 +6,13 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-03-24
+
+### Added
+
+- Added `--theme <path>` support to `syntaxkit preview` so CLI output can render from loaded `.tmTheme` files instead of only the built-in debug palette
+- Added a dedicated CLI test target covering option parsing and themed ANSI rendering
+
 ## [0.2.0] - 2026-03-24
 
 ### Added

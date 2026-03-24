@@ -108,7 +108,8 @@ private struct GrammarDecoder {
     private func decodeCaptures(_ value: Any?) throws -> [Capture] {
         guard let dictionary = value as? [String: Any] else { return [] }
         var captures: [Capture] = []
-        for (indexString, nestedValue) in dictionary {
+        for indexString in dictionary.keys.sorted() {
+            let nestedValue = dictionary[indexString]
             guard let index = Int(indexString), index >= 0 else {
                 throw SyntaxKitError.grammarValidation("Capture key '\(indexString)' must be a non-negative integer.")
             }
@@ -120,6 +121,6 @@ private struct GrammarDecoder {
             }
             captures.append(Capture(index: index, name: name))
         }
-        return captures.sorted { $0.index < $1.index }
+        return captures
     }
 }

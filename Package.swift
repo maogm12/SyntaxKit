@@ -27,6 +27,10 @@ let package = Package(
             resources: [
                 .copy("Fixtures")
             ]
+        ),
+        .testTarget(
+            name: "SyntaxKitCLITests",
+            dependencies: ["SyntaxKitCLI", "SyntaxKit"]
         )
     ]
 )

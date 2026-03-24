@@ -524,6 +524,10 @@ import Testing
     let scope = ScopeName(rawValue: "source.example")
     #expect(scope.description == "source.example")
 
+    let firstCapture = Capture(index: 1, name: "b")
+    let secondCapture = Capture(index: 2, name: "a")
+    #expect(firstCapture.index < secondCapture.index)
+
     let diagnostic = Diagnostic(severity: .warning, message: "warning", line: 2, column: 3)
     #expect(diagnostic.line == 2)
     #expect(Diagnostic(severity: .error, message: "error").severity == .error)
