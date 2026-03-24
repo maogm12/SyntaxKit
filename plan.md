@@ -138,7 +138,7 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
   - [x] `ThemeGlobals`
   - [x] `ThemeRule`
   - [x] `ThemeStyle`
-  - [ ] `ResolvedThemeSpan` or equivalent styled span output
+  - [x] `ResolvedThemeSpan` or equivalent styled span output
 - [x] Parse the top-level theme `name`
 - [x] Parse the top-level `settings` array
 - [x] Treat the first `settings` entry as global theme settings
@@ -169,19 +169,19 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 
 ### Theme Matching and Resolution
 
-- [ ] Keep theme resolution outside the parser
-- [ ] Add a theme resolver that maps parser scope stacks to styles
-- [ ] Implement prefix-based scope matching on dotted scope names
-- [ ] Prefer more specific scope matches over less specific ones
-- [ ] Merge matching scope styles on top of global theme settings
-- [ ] Expose a Swift-friendly API for styling parser spans without requiring a renderer
+- [x] Keep theme resolution outside the parser
+- [x] Add a theme resolver that maps parser scope stacks to styles
+- [x] Implement prefix-based scope matching on dotted scope names
+- [x] Prefer more specific scope matches over less specific ones
+- [x] Merge matching scope styles on top of global theme settings
+- [x] Expose a Swift-friendly API for styling parser spans without requiring a renderer
 
 ### Public API for Theme Integration
 
-- [ ] Add `ThemeLoader.load(from:)`
-- [ ] Add `ThemeLoader.load(data:)`
+- [x] Add `ThemeLoader.load(from:)`
+- [x] Add `ThemeLoader.load(data:)`
 - [ ] Add a theme application API, for example:
-  - [ ] `ThemeResolver.resolve(spans:using:)`
+  - [x] `ThemeResolver.resolve(spans:using:)`
   - [ ] or `SyntaxHighlighter.highlight(_:grammar:theme:)`
 - [ ] Keep the output renderer-neutral so apps can map styled spans into:
   - [ ] `AttributedString`
@@ -208,6 +208,10 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 - [ ] Add tests for specificity ordering
 - [ ] Add tests for merging globals with matching scope rules
 - [ ] Add tests proving parser output can be styled without parser changes
+- [x] Add tests for scope prefix matching
+- [x] Add tests for specificity ordering
+- [x] Add tests for merging globals with matching scope rules
+- [x] Add tests proving parser output can be styled without parser changes
 - [ ] Add CLI tests for `preview --theme`
 
 ## Files Delivered
@@ -218,6 +222,8 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 - [x] [Sources/SyntaxKit/PublicTypes.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/PublicTypes.swift)
 - [x] [Sources/SyntaxKit/RegexSupport.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/RegexSupport.swift)
 - [x] [Sources/SyntaxKit/SyntaxParser.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/SyntaxParser.swift)
+- [x] [Sources/SyntaxKit/ThemeLoader.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/ThemeLoader.swift)
+- [x] [Sources/SyntaxKit/ThemeResolver.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/ThemeResolver.swift)
 - [x] [Sources/SyntaxKitCLI/main.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKitCLI/main.swift)
 - [x] [Tests/SyntaxKitTests/SyntaxKitTests.swift](/Users/gmao/code/SyntaxKit/Tests/SyntaxKitTests/SyntaxKitTests.swift)
 - [x] [languages/JSON.tmLanguage](/Users/gmao/code/SyntaxKit/languages/JSON.tmLanguage)

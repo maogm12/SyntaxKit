@@ -201,4 +201,8 @@ extension String {
     var syntaxKitContainsBackreference: Bool {
         range(of: #"\\[0-9]+"#, options: .regularExpression) != nil
     }
+
+    var syntaxKitScopeLabelCount: Int {
+        split(separator: ".").count
+    }
 }

@@ -156,6 +156,71 @@ import Testing
     let theme = Theme(name: "Theme", globals: globals, rules: [rule])
     #expect(theme.name == "Theme")
     #expect(theme.rules.first?.style.fontStyles == [.bold])
+    let themedSpan = ThemedSpan(
+        startUTF16: 0,
+        endUTF16: 3,
+        line: 1,
+        column: 1,
+        scopes: ["comment.line"],
+        style: style
+    )
+    #expect(themedSpan.style.foreground == color)
+}
+
+@Test func themeResolverMatchesPrefixScopesAndUsesGlobals() throws {
+    let theme = try ThemeLoader.load(data: Data(sampleTheme.utf8))
+    let span = SyntaxSpan(startUTF16: 0, endUTF16: 4, line: 1, column: 1, scopes: ["source.test", "comment.line.double-slash"])
+    let themed = ThemeResolver.resolve(span: span, using: theme)
+    #expect(themed.style.foreground?.rawValue == "#112233")
+    #expect(themed.style.background?.rawValue == "#445566")
+    #expect(themed.style.fontStyles == [.bold, .italic, .underline])
+}
+
+@Test func themeResolverPrefersMoreSpecificRules() throws {
+    let theme = try ThemeLoader.load(data: Data(specificityTheme.utf8))
+    let span = SyntaxSpan(startUTF16: 0, endUTF16: 1, line: 1, column: 1, scopes: ["source.test", "constant.numeric.integer.test"])
+    let themed = ThemeResolver.resolve(span: span, using: theme)
+    #expect(themed.style.foreground?.rawValue == "#202020")
+}
+
+@Test func themeResolverAllowsLaterEqualSpecificityRulesToOverride() throws {
+    let theme = try ThemeLoader.load(data: Data(equalSpecificityTheme.utf8))
+    let span = SyntaxSpan(startUTF16: 0, endUTF16: 1, line: 1, column: 1, scopes: ["keyword.control.test"])
+    let themed = ThemeResolver.resolve(span: span, using: theme)
+    #expect(themed.style.foreground?.rawValue == "#222222")
+}
+
+@Test func themeResolverReturnsGlobalsWhenNoRuleMatches() throws {
+    let theme = try ThemeLoader.load(data: Data(sampleTheme.utf8))
+    let span = SyntaxSpan(startUTF16: 0, endUTF16: 2, line: 1, column: 1, scopes: ["source.test"])
+    let themed = ThemeResolver.resolve(span: span, using: theme)
+    #expect(themed.style.foreground?.rawValue == "#FFFFFF")
+    #expect(themed.style.background?.rawValue == "#000000")
+    #expect(themed.style.fontStyles.isEmpty)
+}
+
+@Test func themeResolverCanResolveWholeParseResults() throws {
+    let grammar = try GrammarLoader.load(data: Data(simpleNumbersGrammar.utf8))
+    let theme = try ThemeLoader.load(data: Data(simpleHighlightTheme.utf8))
+    let registry = GrammarRegistry(grammars: [grammar])
+    let parser = SyntaxParser(registry: registry)
+    let result = try parser.parse("12 true", using: "source.simple")
+    let themed = ThemeResolver.resolve(result: result, using: theme)
+    #expect(themed.count == result.spans.count)
+    #expect(themed.contains(where: { $0.scopes.contains("constant.numeric.simple") && $0.style.foreground?.rawValue == "#101010" }))
+    #expect(themed.contains(where: { $0.scopes.contains("constant.language.simple") && $0.style.foreground?.rawValue == "#202020" }))
+}
+
+@Test func themeResolverInternalHelpersCoverNonMatches() throws {
+    let rule = ThemeRule(name: "Rule", scopes: ["comment.line"], style: ThemeStyle(foreground: nil, background: nil, fontStyles: []))
+    let multiScopeRule = ThemeRule(name: "Multi", scopes: ["constant", "constant.numeric"], style: ThemeStyle(foreground: nil, background: nil, fontStyles: []))
+    #expect(ThemeResolver.scopeMatchSpecificity(ruleScope: "comment", candidateScope: "comment.line") == 1)
+    #expect(ThemeResolver.scopeMatchSpecificity(ruleScope: "comment.line", candidateScope: "comment.line") == 2)
+    #expect(ThemeResolver.scopeMatchSpecificity(ruleScope: "comment", candidateScope: "string.quoted") == nil)
+    #expect(ThemeResolver.scopeMatchSpecificity(ruleScope: "", candidateScope: "comment.line") == nil)
+    #expect(ThemeResolver.ruleSpecificity(rule, matching: ["source.test", "string.quoted"]) == nil)
+    #expect(ThemeResolver.ruleSpecificity(multiScopeRule, matching: ["constant.numeric.integer.test"]) == 2)
+    #expect("comment.line.double-slash".syntaxKitScopeLabelCount == 3)
 }
 
 @Test func rejectsMissingScopeName() throws {
@@ -837,6 +902,54 @@ private let themeWithoutScope = """
         <key>foreground</key><string>#010203</string>
       </dict>
     </dict>
+  </array>
+</dict>
+</plist>
+"""
+
+private let specificityTheme = """
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>name</key><string>Specificity</string>
+  <key>settings</key>
+  <array>
+    <dict><key>settings</key><dict><key>foreground</key><string>#000000</string></dict></dict>
+    <dict><key>scope</key><string>constant</string><key>settings</key><dict><key>foreground</key><string>#101010</string></dict></dict>
+    <dict><key>scope</key><string>constant.numeric</string><key>settings</key><dict><key>foreground</key><string>#202020</string></dict></dict>
+  </array>
+</dict>
+</plist>
+"""
+
+private let equalSpecificityTheme = """
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>name</key><string>Equal</string>
+  <key>settings</key>
+  <array>
+    <dict><key>settings</key><dict><key>foreground</key><string>#000000</string></dict></dict>
+    <dict><key>scope</key><string>keyword</string><key>settings</key><dict><key>foreground</key><string>#111111</string></dict></dict>
+    <dict><key>scope</key><string>keyword</string><key>settings</key><dict><key>foreground</key><string>#222222</string></dict></dict>
+  </array>
+</dict>
+</plist>
+"""
+
+private let simpleHighlightTheme = """
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>name</key><string>Simple Highlight</string>
+  <key>settings</key>
+  <array>
+    <dict><key>settings</key><dict><key>foreground</key><string>#FFFFFF</string><key>background</key><string>#000000</string></dict></dict>
+    <dict><key>scope</key><string>constant.numeric</string><key>settings</key><dict><key>foreground</key><string>#101010</string></dict></dict>
+    <dict><key>scope</key><string>constant.language</string><key>settings</key><dict><key>foreground</key><string>#202020</string></dict></dict>
   </array>
 </dict>
 </plist>
