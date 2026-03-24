@@ -6,6 +6,13 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-03-24
+
+### Added
+
+- Added fixture-backed CLI snapshot tests for plain parse output and themed JSON output
+- Added bundled CLI snapshot resources so public command output can be regression-tested without reimplementing parsing in the tests
+
 ## [0.8.0] - 2026-03-24
 
 ### Added

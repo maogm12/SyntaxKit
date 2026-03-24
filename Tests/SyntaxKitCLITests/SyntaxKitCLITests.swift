@@ -34,6 +34,45 @@ import Testing
     #expect(stdout.contains("punctuation.definition.dictionary.begin.json"))
 }
 
+@Test func cliParseOutputMatchesSnapshotFixture() throws {
+    let grammarPath = "/Users/gmao/code/SyntaxKit/languages/JSON.tmLanguage"
+    let samplePath = "/tmp/syntaxkit-cli-snapshot.json"
+    try "{ \"ok\": true }\n".write(toFile: samplePath, atomically: true, encoding: .utf8)
+
+    var stdout = ""
+    var stderr = ""
+    let exitCode = CLI.run(
+        arguments: ["parse", "--grammar", grammarPath, "--scope", "source.json", "--input", samplePath],
+        stdout: { stdout += $0 },
+        stderr: { stderr += $0 }
+    )
+
+    #expect(exitCode == 0)
+    #expect(stderr.isEmpty)
+    let expected = try fixture(named: "parse_snapshot.txt")
+    #expect(stdout == expected)
+}
+
+@Test func cliThemedJSONOutputMatchesSnapshotFixture() throws {
+    let grammarPath = "/Users/gmao/code/SyntaxKit/languages/JSON.tmLanguage"
+    let themePath = "/Users/gmao/code/SyntaxKit/themes/Monokai.tmTheme"
+    let samplePath = "/tmp/syntaxkit-cli-themed-snapshot.json"
+    try "{ \"ok\": true }\n".write(toFile: samplePath, atomically: true, encoding: .utf8)
+
+    var stdout = ""
+    var stderr = ""
+    let exitCode = CLI.run(
+        arguments: ["parse", "--grammar", grammarPath, "--scope", "source.json", "--input", samplePath, "--json", "--theme", themePath],
+        stdout: { stdout += $0 },
+        stderr: { stderr += $0 }
+    )
+
+    #expect(exitCode == 0)
+    #expect(stderr.isEmpty)
+    let expected = try fixture(named: "parse_themed_snapshot.json")
+    #expect(stdout == expected)
+}
+
 @Test func cliPreviewUsesThemeWhenProvided() throws {
     let grammarPath = "/Users/gmao/code/SyntaxKit/languages/JSON.tmLanguage"
     let themePath = "/Users/gmao/code/SyntaxKit/themes/Monokai.tmTheme"
@@ -93,4 +132,12 @@ import Testing
     let alphaRange = try #require(json.range(of: "\"alpha\""))
     let betaRange = try #require(json.range(of: "\"beta\""))
     #expect(alphaRange.lowerBound < betaRange.lowerBound)
+}
+
+private func fixture(named name: String) throws -> String {
+    guard let url = Bundle.module.url(forResource: name, withExtension: nil, subdirectory: "Fixtures") else {
+        Issue.record("Missing fixture \(name)")
+        return ""
+    }
+    return try String(contentsOf: url, encoding: .utf8)
 }

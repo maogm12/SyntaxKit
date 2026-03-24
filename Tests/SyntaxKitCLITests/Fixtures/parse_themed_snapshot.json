@@ -1,0 +1,204 @@
+[
+  {
+    "column" : 1,
+    "endUTF16" : 1,
+    "line" : 1,
+    "scopes" : [
+      "source.json",
+      "meta.structure.dictionary.json",
+      "punctuation.definition.dictionary.begin.json"
+    ],
+    "startUTF16" : 0,
+    "style" : {
+      "background" : "#272822",
+      "fontStyles" : [
+
+      ],
+      "foreground" : "#F8F8F2"
+    }
+  },
+  {
+    "column" : 2,
+    "endUTF16" : 2,
+    "line" : 1,
+    "scopes" : [
+      "source.json",
+      "meta.structure.dictionary.json"
+    ],
+    "startUTF16" : 1,
+    "style" : {
+      "background" : "#272822",
+      "fontStyles" : [
+
+      ],
+      "foreground" : "#F8F8F2"
+    }
+  },
+  {
+    "column" : 3,
+    "endUTF16" : 3,
+    "line" : 1,
+    "scopes" : [
+      "source.json",
+      "meta.structure.dictionary.json",
+      "string.json",
+      "support.type.property-name.json",
+      "punctuation.support.type.property-name.begin.json"
+    ],
+    "startUTF16" : 2,
+    "style" : {
+      "background" : "#272822",
+      "fontStyles" : [
+        "italic"
+      ],
+      "foreground" : "#66D9EF"
+    }
+  },
+  {
+    "column" : 4,
+    "endUTF16" : 5,
+    "line" : 1,
+    "scopes" : [
+      "source.json",
+      "meta.structure.dictionary.json",
+      "string.json",
+      "support.type.property-name.json"
+    ],
+    "startUTF16" : 3,
+    "style" : {
+      "background" : "#272822",
+      "fontStyles" : [
+        "italic"
+      ],
+      "foreground" : "#66D9EF"
+    }
+  },
+  {
+    "column" : 6,
+    "endUTF16" : 6,
+    "line" : 1,
+    "scopes" : [
+      "source.json",
+      "meta.structure.dictionary.json",
+      "string.json",
+      "support.type.property-name.json",
+      "punctuation.support.type.property-name.end.json"
+    ],
+    "startUTF16" : 5,
+    "style" : {
+      "background" : "#272822",
+      "fontStyles" : [
+        "italic"
+      ],
+      "foreground" : "#66D9EF"
+    }
+  },
+  {
+    "column" : 7,
+    "endUTF16" : 7,
+    "line" : 1,
+    "scopes" : [
+      "source.json",
+      "meta.structure.dictionary.json",
+      "meta.structure.dictionary.value.json",
+      "punctuation.separator.dictionary.key-value.json"
+    ],
+    "startUTF16" : 6,
+    "style" : {
+      "background" : "#272822",
+      "fontStyles" : [
+
+      ],
+      "foreground" : "#F8F8F2"
+    }
+  },
+  {
+    "column" : 8,
+    "endUTF16" : 8,
+    "line" : 1,
+    "scopes" : [
+      "source.json",
+      "meta.structure.dictionary.json",
+      "meta.structure.dictionary.value.json"
+    ],
+    "startUTF16" : 7,
+    "style" : {
+      "background" : "#272822",
+      "fontStyles" : [
+
+      ],
+      "foreground" : "#F8F8F2"
+    }
+  },
+  {
+    "column" : 9,
+    "endUTF16" : 12,
+    "line" : 1,
+    "scopes" : [
+      "source.json",
+      "meta.structure.dictionary.json",
+      "meta.structure.dictionary.value.json",
+      "constant.language.json"
+    ],
+    "startUTF16" : 8,
+    "style" : {
+      "background" : "#272822",
+      "fontStyles" : [
+
+      ],
+      "foreground" : "#AE81FF"
+    }
+  },
+  {
+    "column" : 13,
+    "endUTF16" : 13,
+    "line" : 1,
+    "scopes" : [
+      "source.json",
+      "meta.structure.dictionary.json",
+      "meta.structure.dictionary.value.json"
+    ],
+    "startUTF16" : 12,
+    "style" : {
+      "background" : "#272822",
+      "fontStyles" : [
+
+      ],
+      "foreground" : "#F8F8F2"
+    }
+  },
+  {
+    "column" : 14,
+    "endUTF16" : 14,
+    "line" : 1,
+    "scopes" : [
+      "source.json",
+      "meta.structure.dictionary.json",
+      "punctuation.definition.dictionary.end.json"
+    ],
+    "startUTF16" : 13,
+    "style" : {
+      "background" : "#272822",
+      "fontStyles" : [
+
+      ],
+      "foreground" : "#F8F8F2"
+    }
+  },
+  {
+    "column" : 15,
+    "endUTF16" : 15,
+    "line" : 1,
+    "scopes" : [
+      "source.json"
+    ],
+    "startUTF16" : 14,
+    "style" : {
+      "background" : "#272822",
+      "fontStyles" : [
+
+      ],
+      "foreground" : "#F8F8F2"
+    }
+  }
+]

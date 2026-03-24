@@ -30,7 +30,10 @@ let package = Package(
         ),
         .testTarget(
             name: "SyntaxKitCLITests",
-            dependencies: ["SyntaxKitCLI", "SyntaxKit"]
+            dependencies: ["SyntaxKitCLI", "SyntaxKit"],
+            resources: [
+                .copy("Fixtures")
+            ]
         )
     ]
 )

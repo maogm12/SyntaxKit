@@ -1,0 +1,11 @@
+0-1 @1:1 source.json meta.structure.dictionary.json punctuation.definition.dictionary.begin.json
+1-2 @1:2 source.json meta.structure.dictionary.json
+2-3 @1:3 source.json meta.structure.dictionary.json string.json support.type.property-name.json punctuation.support.type.property-name.begin.json
+3-5 @1:4 source.json meta.structure.dictionary.json string.json support.type.property-name.json
+5-6 @1:6 source.json meta.structure.dictionary.json string.json support.type.property-name.json punctuation.support.type.property-name.end.json
+6-7 @1:7 source.json meta.structure.dictionary.json meta.structure.dictionary.value.json punctuation.separator.dictionary.key-value.json
+7-8 @1:8 source.json meta.structure.dictionary.json meta.structure.dictionary.value.json
+8-12 @1:9 source.json meta.structure.dictionary.json meta.structure.dictionary.value.json constant.language.json
+12-13 @1:13 source.json meta.structure.dictionary.json meta.structure.dictionary.value.json
+13-14 @1:14 source.json meta.structure.dictionary.json punctuation.definition.dictionary.end.json
+14-15 @1:15 source.json

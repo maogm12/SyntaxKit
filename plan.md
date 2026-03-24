@@ -235,7 +235,7 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 
 - [x] Add more real-world grammar fixtures besides JSON
 - [x] Add one or more real-world `.tmTheme` fixtures
-- [ ] Add CLI snapshot-style output tests
+- [x] Add CLI snapshot-style output tests
 - [x] Decide whether to support additional grammar formats beyond plist `.tmLanguage`
 - [ ] Design an incremental parsing API without coupling it to rendering
 - [x] Decide the exact public style/color model for theme output
