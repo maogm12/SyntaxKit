@@ -18,6 +18,30 @@ It can:
 
 The implementation in this repo covers the v1 plan in [plan.md](/Users/gmao/code/SyntaxKit/plan.md).
 
+## Demo App
+
+A small macOS SwiftUI demo app is included in [Examples/SyntaxKitDemo](/Users/gmao/code/SyntaxKit/Examples/SyntaxKitDemo).
+
+It demonstrates:
+
+- grammar loading
+- tmTheme loading
+- live parsing and themed preview
+- scope inspection
+- incremental line-state tracking
+
+Build it with:
+
+```bash
+swift build --package-path Examples/SyntaxKitDemo
+```
+
+Run it with:
+
+```bash
+swift run --package-path Examples/SyntaxKitDemo
+```
+
 ## Installation
 
 Add the package in SwiftPM:

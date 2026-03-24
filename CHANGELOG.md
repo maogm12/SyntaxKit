@@ -6,6 +6,13 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-03-24
+
+### Added
+
+- Added a standalone macOS SwiftUI demo app in `Examples/SyntaxKitDemo` that showcases live parsing, tmTheme styling, scope inspection, and incremental line-state updates
+- Added README instructions for building and running the demo app locally
+
 ## [1.0.0] - 2026-03-24
 
 ### Added
