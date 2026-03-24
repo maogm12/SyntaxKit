@@ -15,7 +15,7 @@ final class DemoModel: ObservableObject {
     @Published private(set) var errorMessage: String?
     @Published private(set) var grammarName = "JSON"
     @Published private(set) var grammarScopeName = "source.json"
-    @Published private(set) var themeName = "Monokai"
+    @Published private(set) var themeName = "Sample Dark"
 
     private var parser: SyntaxParser?
     private var theme: Theme?
@@ -27,7 +27,7 @@ final class DemoModel: ObservableObject {
     func load() async {
         do {
             try loadBundledGrammar(.json, replaceSource: false)
-            try loadBundledTheme()
+            try loadBundledTheme(.dark)
         } catch {
             errorMessage = String(describing: error)
             preview = NSAttributedString(string: "")
@@ -97,10 +97,10 @@ final class DemoModel: ObservableObject {
         render()
     }
 
-    func loadBundledTheme() throws {
-        let themeURL = try resourceURL(named: "Monokai.tmTheme")
+    func loadBundledTheme(_ asset: DemoThemeAsset = .dark) throws {
+        let themeURL = try resourceURL(named: asset.resourceName)
         theme = try ThemeLoader.load(from: themeURL)
-        themeName = "Monokai"
+        themeName = asset.displayName
         render()
     }
 
@@ -209,7 +209,7 @@ enum DemoAsset: String, CaseIterable, Identifiable {
       "version": "1.1.0",
       "features": [
         "tmLanguage",
-        "tmTheme",
+        "sample tmTheme",
         "incremental parsing"
       ],
       "active": true,
@@ -220,10 +220,35 @@ enum DemoAsset: String, CaseIterable, Identifiable {
     static let iniSample = """
     [syntaxkit]
     name=SyntaxKit
-    theme=Monokai
+    theme=Sample Dark
     incremental=true
     ; change the grammar or load your own file
     """
+}
+
+enum DemoThemeAsset: String, CaseIterable, Identifiable {
+    case dark
+    case light
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .dark:
+            return "Sample Dark"
+        case .light:
+            return "Sample Light"
+        }
+    }
+
+    var resourceName: String {
+        switch self {
+        case .dark:
+            return "SampleDark.tmTheme"
+        case .light:
+            return "SampleLight.tmTheme"
+        }
+    }
 }
 
 private enum DemoRenderer {

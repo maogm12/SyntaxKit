@@ -63,8 +63,10 @@ struct ContentView: View {
                     }
                 }
                 Menu("Theme") {
-                    Button("Monokai") {
-                        try? model.loadBundledTheme()
+                    ForEach(DemoThemeAsset.allCases) { asset in
+                        Button(asset.displayName) {
+                            try? model.loadBundledTheme(asset)
+                        }
                     }
                     Divider()
                     Button("Load Theme File...") {

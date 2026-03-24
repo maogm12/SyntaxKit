@@ -16,16 +16,26 @@ import Testing
     #expect(grammar.patterns.isEmpty == false)
 }
 
-@Test func loadsMonokaiThemeFixture() throws {
-    let fixtureURL = URL(fileURLWithPath: "/Users/gmao/code/SyntaxKit/themes/Monokai.tmTheme")
+@Test func loadsSampleDarkThemeFixture() throws {
+    let fixtureURL = URL(fileURLWithPath: "/Users/gmao/code/SyntaxKit/themes/SampleDark.tmTheme")
     let theme = try ThemeLoader.load(from: fixtureURL)
-    #expect(theme.name == "Monokai")
-    #expect(theme.globals.background?.rawValue == "#272822")
-    #expect(theme.globals.background?.rgba?.red == 39)
-    #expect(theme.globals.gutter?.rawValue == "#49483E")
-    #expect(theme.globals.gutterForeground?.rawValue == "#75715E")
-    #expect(theme.rules.contains(where: { $0.scopes.contains("comment") && $0.style.foreground?.rawValue == "#75715E" }))
+    #expect(theme.name == "Sample Dark")
+    #expect(theme.globals.background?.rawValue == "#1E1F24")
+    #expect(theme.globals.background?.rgba?.red == 30)
+    #expect(theme.globals.gutter?.rawValue == "#232733")
+    #expect(theme.globals.gutterForeground?.rawValue == "#7B8496")
+    #expect(theme.rules.contains(where: { $0.scopes.contains("comment") && $0.style.foreground?.rawValue == "#7B8496" }))
     #expect(theme.rules.contains(where: { $0.scopes.contains("constant.numeric") }))
+}
+
+@Test func loadsSampleLightThemeFixture() throws {
+    let fixtureURL = URL(fileURLWithPath: "/Users/gmao/code/SyntaxKit/themes/SampleLight.tmTheme")
+    let theme = try ThemeLoader.load(from: fixtureURL)
+    #expect(theme.name == "Sample Light")
+    #expect(theme.globals.background?.rawValue == "#FAF8F2")
+    #expect(theme.globals.foreground?.rawValue == "#243145")
+    #expect(theme.globals.gutter?.rawValue == "#ECE6D8")
+    #expect(theme.rules.contains(where: { $0.scopes.contains("string") && $0.style.foreground?.rawValue == "#2F7D4A" }))
 }
 
 @Test func rejectsThemeWithoutName() throws {

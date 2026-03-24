@@ -15,7 +15,7 @@ import Testing
 
 @Test func cliParseJsonUsesThemedSpanOutputWhenThemeIsProvided() throws {
     let grammarPath = "/Users/gmao/code/SyntaxKit/languages/JSON.tmLanguage"
-    let themePath = "/Users/gmao/code/SyntaxKit/themes/Monokai.tmTheme"
+    let themePath = "/Users/gmao/code/SyntaxKit/themes/SampleDark.tmTheme"
     let samplePath = "/tmp/syntaxkit-cli-parse-themed.json"
     try "{ \"ok\": true }\n".write(toFile: samplePath, atomically: true, encoding: .utf8)
 
@@ -55,7 +55,7 @@ import Testing
 
 @Test func cliThemedJSONOutputMatchesSnapshotFixture() throws {
     let grammarPath = "/Users/gmao/code/SyntaxKit/languages/JSON.tmLanguage"
-    let themePath = "/Users/gmao/code/SyntaxKit/themes/Monokai.tmTheme"
+    let themePath = "/Users/gmao/code/SyntaxKit/themes/SampleDark.tmTheme"
     let samplePath = "/tmp/syntaxkit-cli-themed-snapshot.json"
     try "{ \"ok\": true }\n".write(toFile: samplePath, atomically: true, encoding: .utf8)
 
@@ -75,7 +75,7 @@ import Testing
 
 @Test func cliPreviewUsesThemeWhenProvided() throws {
     let grammarPath = "/Users/gmao/code/SyntaxKit/languages/JSON.tmLanguage"
-    let themePath = "/Users/gmao/code/SyntaxKit/themes/Monokai.tmTheme"
+    let themePath = "/Users/gmao/code/SyntaxKit/themes/SampleDark.tmTheme"
     let samplePath = "/tmp/syntaxkit-cli-preview.json"
     try "{ \"name\": \"SyntaxKit\" }\n".write(toFile: samplePath, atomically: true, encoding: .utf8)
 
@@ -89,7 +89,7 @@ import Testing
 
     #expect(exitCode == 0)
     #expect(stderr.isEmpty)
-    #expect(stdout.contains("38;2;230;219;116"))
+    #expect(stdout.contains("38;2;166;227;161"))
 }
 
 @Test func cliPreviewFallsBackToDebugPaletteWithoutTheme() throws {

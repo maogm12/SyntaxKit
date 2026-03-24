@@ -12,8 +12,9 @@
 		AA0000000000000000000003 /* HighlightingTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000013 /* HighlightingTextView.swift */; };
 		AA0000000000000000000004 /* SyntaxKitDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000014 /* SyntaxKitDemoApp.swift */; };
 		AA0000000000000000000005 /* JSON.tmLanguage in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000015 /* JSON.tmLanguage */; };
-		AA0000000000000000000006 /* Monokai.tmTheme in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000016 /* Monokai.tmTheme */; };
+		AA0000000000000000000006 /* SampleDark.tmTheme in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000016 /* SampleDark.tmTheme */; };
 		AA0000000000000000000007 /* INI.tmLanguage.json in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000017 /* INI.tmLanguage.json */; };
+		AA0000000000000000000009 /* SampleLight.tmTheme in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000018 /* SampleLight.tmTheme */; };
 		AA0000000000000000000008 /* SyntaxKit in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000031 /* SyntaxKit */; };
 /* End PBXBuildFile section */
 
@@ -24,8 +25,9 @@
 		AA0000000000000000000013 /* HighlightingTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/SyntaxKitDemo/HighlightingTextView.swift; sourceTree = SOURCE_ROOT; };
 		AA0000000000000000000014 /* SyntaxKitDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/SyntaxKitDemo/SyntaxKitDemoApp.swift; sourceTree = SOURCE_ROOT; };
 		AA0000000000000000000015 /* JSON.tmLanguage */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Sources/SyntaxKitDemo/Resources/JSON.tmLanguage; sourceTree = SOURCE_ROOT; };
-		AA0000000000000000000016 /* Monokai.tmTheme */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Sources/SyntaxKitDemo/Resources/Monokai.tmTheme; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000016 /* SampleDark.tmTheme */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Sources/SyntaxKitDemo/Resources/SampleDark.tmTheme; sourceTree = SOURCE_ROOT; };
 		AA0000000000000000000017 /* INI.tmLanguage.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Sources/SyntaxKitDemo/Resources/INI.tmLanguage.json; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000018 /* SampleLight.tmTheme */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Sources/SyntaxKitDemo/Resources/SampleLight.tmTheme; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,7 +67,8 @@
 			children = (
 				AA0000000000000000000017 /* INI.tmLanguage.json */,
 				AA0000000000000000000015 /* JSON.tmLanguage */,
-				AA0000000000000000000016 /* Monokai.tmTheme */,
+				AA0000000000000000000016 /* SampleDark.tmTheme */,
+				AA0000000000000000000018 /* SampleLight.tmTheme */,
 			);
 			path = Sources/SyntaxKitDemo/Resources;
 			sourceTree = SOURCE_ROOT;
@@ -147,7 +150,8 @@
 			files = (
 				AA0000000000000000000007 /* INI.tmLanguage.json in Resources */,
 				AA0000000000000000000005 /* JSON.tmLanguage in Resources */,
-				AA0000000000000000000006 /* Monokai.tmTheme in Resources */,
+				AA0000000000000000000006 /* SampleDark.tmTheme in Resources */,
+				AA0000000000000000000009 /* SampleLight.tmTheme in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

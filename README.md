@@ -14,7 +14,7 @@ It can:
 
 ## Status
 
-`SyntaxKit` is currently at `1.3.0`.
+`SyntaxKit` is currently at `1.6.0`.
 
 The implementation in this repo covers the v1 plan in [plan.md](/Users/gmao/code/SyntaxKit/plan.md).
 
@@ -129,7 +129,7 @@ for span in result.spans {
 ## Load And Apply A Theme
 
 ```swift
-let themeURL = URL(fileURLWithPath: "/path/to/Monokai.tmTheme")
+let themeURL = URL(fileURLWithPath: "/path/to/SampleDark.tmTheme")
 let theme = try ThemeLoader.load(from: themeURL)
 
 let themedSpans = ThemeResolver.resolve(result: result, using: theme)
@@ -220,9 +220,9 @@ Run the CLI from the repo root:
 swift run syntaxkit validate --grammar languages/JSON.tmLanguage
 swift run syntaxkit parse --grammar languages/JSON.tmLanguage --scope source.json --input /tmp/sample.json
 swift run syntaxkit parse --grammar languages/JSON.tmLanguage --scope source.json --input /tmp/sample.json --json
-swift run syntaxkit parse --grammar languages/JSON.tmLanguage --scope source.json --input /tmp/sample.json --json --theme themes/Monokai.tmTheme
+swift run syntaxkit parse --grammar languages/JSON.tmLanguage --scope source.json --input /tmp/sample.json --json --theme themes/SampleDark.tmTheme
 swift run syntaxkit preview --grammar languages/JSON.tmLanguage --scope source.json --input /tmp/sample.json
-swift run syntaxkit preview --grammar languages/JSON.tmLanguage --scope source.json --input /tmp/sample.json --theme themes/Monokai.tmTheme
+swift run syntaxkit preview --grammar languages/JSON.tmLanguage --scope source.json --input /tmp/sample.json --theme themes/SampleDark.tmTheme
 ```
 
 Commands:
@@ -239,7 +239,8 @@ This repo includes real fixtures you can use while developing:
 
 - [languages/JSON.tmLanguage](/Users/gmao/code/SyntaxKit/languages/JSON.tmLanguage)
 - [languages/INI.tmLanguage.json](/Users/gmao/code/SyntaxKit/languages/INI.tmLanguage.json)
-- [themes/Monokai.tmTheme](/Users/gmao/code/SyntaxKit/themes/Monokai.tmTheme)
+- [themes/SampleDark.tmTheme](/Users/gmao/code/SyntaxKit/themes/SampleDark.tmTheme)
+- [themes/SampleLight.tmTheme](/Users/gmao/code/SyntaxKit/themes/SampleLight.tmTheme)
 
 ## Development
 

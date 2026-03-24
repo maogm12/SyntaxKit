@@ -6,6 +6,14 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-03-24
+
+### Added
+
+- Replaced the old bundled theme fixture with two repo-owned sample themes: `SampleDark.tmTheme` and `SampleLight.tmTheme`
+- Updated the macOS demo app to bundle both sample themes and switch between them from the Theme menu
+- Updated CLI tests, theme fixtures, and README examples to use the new sample themes
+
 ## [1.5.0] - 2026-03-24
 
 ### Added
@@ -122,6 +130,6 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 - CLI commands for `validate`, `parse`, `parse --json`, and `preview`
 - tmTheme loading for plist-based `.tmTheme` files
 - Theme resolution layered on parser spans with prefix matching, specificity handling, and global fallback
-- Fixture-driven tests using the bundled JSON grammar and Monokai theme
+- Fixture-driven tests using the bundled JSON grammar and sample themes
 - Workspace guidance in `agent.md`
 - Root `VERSION` file for release tracking

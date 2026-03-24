@@ -10,11 +10,11 @@
     ],
     "startUTF16" : 0,
     "style" : {
-      "background" : "#272822",
+      "background" : "#1E1F24",
       "fontStyles" : [
 
       ],
-      "foreground" : "#F8F8F2"
+      "foreground" : "#E7E9EE"
     }
   },
   {
@@ -27,11 +27,11 @@
     ],
     "startUTF16" : 1,
     "style" : {
-      "background" : "#272822",
+      "background" : "#1E1F24",
       "fontStyles" : [
 
       ],
-      "foreground" : "#F8F8F2"
+      "foreground" : "#E7E9EE"
     }
   },
   {
@@ -47,11 +47,11 @@
     ],
     "startUTF16" : 2,
     "style" : {
-      "background" : "#272822",
+      "background" : "#1E1F24",
       "fontStyles" : [
         "italic"
       ],
-      "foreground" : "#66D9EF"
+      "foreground" : "#7DD3FC"
     }
   },
   {
@@ -66,11 +66,11 @@
     ],
     "startUTF16" : 3,
     "style" : {
-      "background" : "#272822",
+      "background" : "#1E1F24",
       "fontStyles" : [
         "italic"
       ],
-      "foreground" : "#66D9EF"
+      "foreground" : "#7DD3FC"
     }
   },
   {
@@ -86,11 +86,11 @@
     ],
     "startUTF16" : 5,
     "style" : {
-      "background" : "#272822",
+      "background" : "#1E1F24",
       "fontStyles" : [
         "italic"
       ],
-      "foreground" : "#66D9EF"
+      "foreground" : "#7DD3FC"
     }
   },
   {
@@ -105,11 +105,11 @@
     ],
     "startUTF16" : 6,
     "style" : {
-      "background" : "#272822",
+      "background" : "#1E1F24",
       "fontStyles" : [
 
       ],
-      "foreground" : "#F8F8F2"
+      "foreground" : "#E7E9EE"
     }
   },
   {
@@ -123,11 +123,11 @@
     ],
     "startUTF16" : 7,
     "style" : {
-      "background" : "#272822",
+      "background" : "#1E1F24",
       "fontStyles" : [
 
       ],
-      "foreground" : "#F8F8F2"
+      "foreground" : "#E7E9EE"
     }
   },
   {
@@ -142,11 +142,11 @@
     ],
     "startUTF16" : 8,
     "style" : {
-      "background" : "#272822",
+      "background" : "#1E1F24",
       "fontStyles" : [
-
+        "bold"
       ],
-      "foreground" : "#AE81FF"
+      "foreground" : "#C6A0F6"
     }
   },
   {
@@ -160,11 +160,11 @@
     ],
     "startUTF16" : 12,
     "style" : {
-      "background" : "#272822",
+      "background" : "#1E1F24",
       "fontStyles" : [
 
       ],
-      "foreground" : "#F8F8F2"
+      "foreground" : "#E7E9EE"
     }
   },
   {
@@ -178,11 +178,11 @@
     ],
     "startUTF16" : 13,
     "style" : {
-      "background" : "#272822",
+      "background" : "#1E1F24",
       "fontStyles" : [
 
       ],
-      "foreground" : "#F8F8F2"
+      "foreground" : "#E7E9EE"
     }
   },
   {
@@ -194,11 +194,11 @@
     ],
     "startUTF16" : 14,
     "style" : {
-      "background" : "#272822",
+      "background" : "#1E1F24",
       "fontStyles" : [
 
       ],
-      "foreground" : "#F8F8F2"
+      "foreground" : "#E7E9EE"
     }
   }
 ]
