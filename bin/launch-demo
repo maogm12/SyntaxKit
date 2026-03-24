@@ -1,0 +1,68 @@
+#!/usr/bin/env zsh
+
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "$0")/.." && pwd)"
+project_path="$repo_root/Examples/SyntaxKitDemo/SyntaxKitDemoApp.xcodeproj"
+
+usage() {
+  cat <<'EOF'
+Usage: bin/launch-demo [--build]
+
+Options:
+  --build   Build the demo app first, then open the built .app bundle.
+  --help    Show this help message.
+
+Without --build, the script opens the Xcode project.
+EOF
+}
+
+if [[ $# -gt 1 ]]; then
+  usage
+  exit 1
+fi
+
+mode="project"
+if [[ $# -eq 1 ]]; then
+  case "$1" in
+    --build)
+      mode="build"
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    *)
+      usage
+      exit 1
+      ;;
+  esac
+fi
+
+if [[ ! -d "$project_path" ]]; then
+  echo "Demo project not found at $project_path" >&2
+  exit 1
+fi
+
+if [[ "$mode" == "project" ]]; then
+  open "$project_path"
+  exit 0
+fi
+
+derived_data="$repo_root/.build/SyntaxKitDemoDerivedData"
+
+xcodebuild \
+  -project "$project_path" \
+  -scheme SyntaxKitDemoApp \
+  -configuration Debug \
+  -derivedDataPath "$derived_data" \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+
+app_path="$derived_data/Build/Products/Debug/SyntaxKitDemoApp.app"
+if [[ ! -d "$app_path" ]]; then
+  echo "Built app not found at $app_path" >&2
+  exit 1
+fi
+
+open "$app_path"

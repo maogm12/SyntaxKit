@@ -40,6 +40,18 @@ open Examples/SyntaxKitDemo/SyntaxKitDemoApp.xcodeproj
 
 This launches as a normal macOS app bundle, so input focus stays in the app instead of Terminal.
 
+There is also a helper script:
+
+```bash
+bin/launch-demo
+```
+
+To build and then open the app bundle directly:
+
+```bash
+bin/launch-demo --build
+```
+
 If you want the older SwiftPM-hosted version for quick iteration, you can still build and run it with:
 
 ```bash

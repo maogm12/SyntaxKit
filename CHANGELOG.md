@@ -6,6 +6,13 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-03-24
+
+### Added
+
+- Added `bin/launch-demo` to open the demo Xcode project or build and launch the `.app` bundle directly from the repo root
+- Updated the README demo section with the new helper script usage
+
 ## [1.3.0] - 2026-03-24
 
 ### Added
