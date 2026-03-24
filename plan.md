@@ -126,7 +126,7 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 - [ ] Add incremental parsing support in a future iteration
 - [x] Add broader fixture coverage beyond JSON
 - [x] Add tmTheme loading, matching, and style resolution
-- [ ] Consider richer renderer adapters outside the core library
+- [x] Consider richer renderer adapters outside the core library
 
 ## Theme Support Tasks
 
@@ -184,10 +184,10 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 - [x] Add a theme application API, for example:
   - [x] `ThemeResolver.resolve(spans:using:)`
   - [x] `SyntaxHighlighter.highlight(_:grammar:theme:)`
-- [ ] Keep the output renderer-neutral so apps can map styled spans into:
-  - [ ] `AttributedString`
-  - [ ] `NSAttributedString`
-  - [ ] custom editor/view models
+- [x] Keep the output renderer-neutral so apps can map styled spans into:
+  - [x] `AttributedString`
+  - [x] `NSAttributedString`
+  - [x] custom editor/view models
 
 ### CLI Theme Support
 
@@ -222,6 +222,7 @@ Theme support should follow the legacy `.tmTheme` plist format documented by Sub
 - [x] [Sources/SyntaxKit/ThemeLoader.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/ThemeLoader.swift)
 - [x] [Sources/SyntaxKit/ThemeResolver.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/ThemeResolver.swift)
 - [x] [Sources/SyntaxKit/SyntaxHighlighter.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/SyntaxHighlighter.swift)
+- [x] [Sources/SyntaxKit/StyledTextAdapter.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKit/StyledTextAdapter.swift)
 - [x] [Sources/SyntaxKitCLI/CLI.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKitCLI/CLI.swift)
 - [x] [Sources/SyntaxKitCLI/main.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKitCLI/main.swift)
 - [x] [Tests/SyntaxKitTests/SyntaxKitTests.swift](/Users/gmao/code/SyntaxKit/Tests/SyntaxKitTests/SyntaxKitTests.swift)

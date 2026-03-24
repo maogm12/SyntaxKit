@@ -271,6 +271,55 @@ import Testing
     #expect(viaResolved.contains(where: { $0.scopes.contains("constant.language.simple") && $0.style.foreground?.rawValue == "#202020" }))
 }
 
+@Test @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+func styledTextAdapterBuildsRunsAndAttributedOutputs() throws {
+    let style = ThemeStyle(
+        foreground: ThemeColor(rawValue: "#112233"),
+        background: ThemeColor(rawValue: "#445566"),
+        fontStyles: [.bold, .italic]
+    )
+    let plainStyle = ThemeStyle(foreground: nil, background: nil, fontStyles: [])
+    let spans = [
+        ThemedSpan(startUTF16: 0, endUTF16: 1, line: 1, column: 1, scopes: ["scope.one"], style: style),
+        ThemedSpan(startUTF16: 2, endUTF16: 3, line: 2, column: 1, scopes: ["scope.two"], style: plainStyle)
+    ]
+
+    let runs = StyledTextAdapter.runs(text: "a\nb", themedSpans: spans)
+    #expect(runs.count == 3)
+    #expect(runs[0] == StyledTextRun(text: "a", startUTF16: 0, endUTF16: 1, scopes: ["scope.one"], style: style))
+    #expect(runs[1] == StyledTextRun(text: "\n", startUTF16: 1, endUTF16: 2, scopes: [], style: nil))
+    #expect(runs[2] == StyledTextRun(text: "b", startUTF16: 2, endUTF16: 3, scopes: ["scope.two"], style: plainStyle))
+
+    let attributed = StyledTextAdapter.attributedString(text: "a\nb", themedSpans: spans)
+    #expect(String(attributed.characters) == "a\nb")
+    let attributedRuns = Array(attributed.runs)
+    let firstAttributedRun = try #require(attributedRuns.first)
+    #expect(firstAttributedRun[SyntaxKitScopesAttribute.self] == ["scope.one"])
+    #expect(firstAttributedRun[SyntaxKitForegroundAttribute.self] == "#112233")
+    #expect(firstAttributedRun[SyntaxKitBackgroundAttribute.self] == "#445566")
+    #expect(firstAttributedRun[SyntaxKitFontStylesAttribute.self] == ["bold", "italic"])
+
+    let nsAttributed = StyledTextAdapter.nsAttributedString(text: "a\nb", themedSpans: spans)
+    #expect(nsAttributed.string == "a\nb")
+    let styledAttributes = nsAttributed.attributes(at: 0, effectiveRange: nil)
+    #expect(styledAttributes[NSAttributedString.Key(StyledTextAdapter.scopesAttributeName)] as? [String] == ["scope.one"])
+    #expect(styledAttributes[NSAttributedString.Key(StyledTextAdapter.foregroundAttributeName)] as? String == "#112233")
+    #expect(styledAttributes[NSAttributedString.Key(StyledTextAdapter.backgroundAttributeName)] as? String == "#445566")
+    #expect(styledAttributes[NSAttributedString.Key(StyledTextAdapter.fontStylesAttributeName)] as? [String] == ["bold", "italic"])
+    let plainAttributes = nsAttributed.attributes(at: 1, effectiveRange: nil)
+    #expect(plainAttributes.isEmpty)
+}
+
+@Test @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+func styledTextAdapterSupportsEmptyInputs() throws {
+    let runs = StyledTextAdapter.runs(text: "plain", themedSpans: [])
+    #expect(runs == [StyledTextRun(text: "plain", startUTF16: 0, endUTF16: 5, scopes: [], style: nil)])
+    let attributed = StyledTextAdapter.attributedString(text: "", themedSpans: [])
+    #expect(String(attributed.characters).isEmpty)
+    let nsAttributed = StyledTextAdapter.nsAttributedString(text: "", themedSpans: [])
+    #expect(nsAttributed.string.isEmpty)
+}
+
 @Test func themeResolverInternalHelpersCoverNonMatches() throws {
     let rule = ThemeRule(name: "Rule", scopes: ["comment.line"], style: ThemeStyle(foreground: nil, background: nil, fontStyles: []))
     let multiScopeRule = ThemeRule(name: "Multi", scopes: ["constant", "constant.numeric"], style: ThemeStyle(foreground: nil, background: nil, fontStyles: []))

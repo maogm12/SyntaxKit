@@ -6,6 +6,13 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-03-24
+
+### Added
+
+- Added `StyledTextAdapter` for converting themed spans into full-text custom runs, `AttributedString`, and `NSAttributedString` outputs without coupling the parser to rendering
+- Added tests covering gap preservation and attribute propagation across the new adapter APIs
+
 ## [0.7.0] - 2026-03-24
 
 ### Added
