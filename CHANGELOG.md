@@ -6,6 +6,13 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-03-24
+
+### Fixed
+
+- Fixed zero-width end-pattern handling so nested JSON object value contexts no longer skip the closing `}` delimiter
+- Added a regression test covering the real JSON grammar's closing brace tokenization
+
 ## [0.3.0] - 2026-03-24
 
 ### Added

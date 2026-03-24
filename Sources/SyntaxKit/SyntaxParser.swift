@@ -77,7 +77,7 @@ public final class SyntaxParser {
                     )
                     if match.range.length == 0 {
                         contexts.removeLast()
-                        cursor = min(cursor + 1, lineLength)
+                        continue
                     } else {
                         contexts.removeLast()
                         cursor = match.range.location + match.range.length

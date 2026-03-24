@@ -472,6 +472,22 @@ import Testing
     #expect(result.spans.contains(where: { $0.scopes.contains("constant.numeric.json") }))
 }
 
+@Test func parsesJSONClosingBraceWithDelimiterScope() throws {
+    let fixtureURL = URL(fileURLWithPath: "/Users/gmao/code/SyntaxKit/languages/JSON.tmLanguage")
+    let grammar = try GrammarLoader.load(from: fixtureURL)
+    let registry = GrammarRegistry(grammars: [grammar])
+    let parser = SyntaxParser(registry: registry)
+    let sample = """
+    {
+      "name": "SyntaxKit"
+    }
+    """
+    let result = try parser.parse(sample, using: "source.json")
+    #expect(result.spans.contains(where: {
+        $0.scopes.contains("punctuation.definition.dictionary.end.json")
+    }))
+}
+
 @Test func parserSupportsResolvedGrammarInitializerAndEmptyText() throws {
     let grammar = try GrammarLoader.load(data: Data(simpleNumbersGrammar.utf8))
     let registry = GrammarRegistry(grammars: [grammar])
