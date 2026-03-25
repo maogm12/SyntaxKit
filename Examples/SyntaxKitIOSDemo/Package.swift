@@ -7,7 +7,7 @@ let package = Package(
         .iOS(.v16)
     ],
     products: [
-        .library(
+        .executable(
             name: "SyntaxKitIOSDemo",
             targets: ["SyntaxKitIOSDemo"]
         )
@@ -16,7 +16,7 @@ let package = Package(
         .package(path: "../../")
     ],
     targets: [
-        .target(
+        .executableTarget(
             name: "SyntaxKitIOSDemo",
             dependencies: [
                 .product(name: "SyntaxKit", package: "SyntaxKit")

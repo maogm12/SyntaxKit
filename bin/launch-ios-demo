@@ -1,0 +1,97 @@
+#!/usr/bin/env zsh
+
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "$0")/.." && pwd)"
+demo_dir="$repo_root/Examples/SyntaxKitIOSDemo"
+derived_data="$repo_root/.build/SyntaxKitIOSDemoDerivedData"
+scheme="SyntaxKitIOSDemo"
+bundle_id="syntaxkitiosdemo.SyntaxKitIOSDemo"
+device_name="iPhone 17"
+
+usage() {
+  cat <<EOF
+Usage: bin/launch-ios-demo [--device name]
+
+Options:
+  --device name   Specify the simulator device name (default: "$device_name")
+  --help          Show this help message.
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --device)
+      device_name="$2"
+      shift 2
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    *)
+      usage
+      exit 1
+      ;;
+  esac
+done
+
+echo "--- Building iOS Demo App ---"
+(cd "$demo_dir" && xcodebuild \
+  -scheme "$scheme" \
+  -configuration Debug \
+  -sdk iphonesimulator \
+  -destination "platform=iOS Simulator,name=$device_name" \
+  -derivedDataPath "$derived_data" \
+  -parallelizeTargets \
+  build)
+
+# Construct .app bundle from the SPM-produced bundle
+build_products="$derived_data/Build/Products/Debug-iphonesimulator"
+raw_bundle="$build_products/${scheme}_${scheme}.bundle"
+app_bundle="$build_products/$scheme.app"
+
+# Start clean
+rm -rf "$app_bundle"
+cp -R "$raw_bundle" "$app_bundle"
+
+# Inject the executable
+cp "$build_products/$scheme" "$app_bundle/$scheme"
+
+# Inject the correct Info.plist
+cp "$demo_dir/Info.plist" "$app_bundle/Info.plist"
+
+# Fix Info.plist values
+plutil -replace CFBundleExecutable -string "$scheme" "$app_bundle/Info.plist"
+plutil -replace MinimumOSVersion -string "16.0" "$app_bundle/Info.plist"
+
+# Create PkgInfo
+echo "APPL????" > "$app_bundle/PkgInfo"
+
+echo "--- Code Signing App ---"
+codesign --force --sign - --timestamp=none "$app_bundle"
+
+echo "--- Launching Simulator ($device_name) ---"
+# Get device UDID
+device_udid=$(xcrun simctl list devices available | grep "$device_name" | head -n 1 | sed -E 's/.*\(([0-9A-F-]+)\).*/\1/')
+
+if [[ -z "$device_udid" ]]; then
+  echo "Error: Could not find simulator device named '$device_name'" >&2
+  exit 1
+fi
+
+# Boot simulator if needed
+if ! xcrun simctl list devices | grep "$device_udid" | grep -q "Booted"; then
+  xcrun simctl boot "$device_udid" || true
+fi
+
+# Open simulator app
+open -a Simulator
+
+echo "--- Installing App ---"
+xcrun simctl install "$device_udid" "$app_bundle"
+
+echo "--- Starting App ---"
+xcrun simctl launch "$device_udid" "$bundle_id"
+
+echo "Done!"
