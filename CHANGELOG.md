@@ -6,6 +6,14 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-03-24
+
+### Added
+
+- Enabled strict Swift Concurrency checks across all targets.
+- Marked `SyntaxParser` as `Sendable` to support safe use in concurrent environments.
+- Audited the codebase for thread-safety and ensured all public types are concurrency-safe.
+
 ## [2.0.9] - 2026-03-24
 
 ### Improved

@@ -375,5 +375,5 @@ The compatibility shim should explicitly not promise to emulate:
 - [x] **Improve Incremental Parsing**: Refine the `reparse` API to better handle multi-line edits and common editor integration patterns.
 
 ### Modernization
-- [ ] **Swift Concurrency**: Fully audit the codebase for Swift Concurrency compatibility (strict concurrency checks).
+- [x] **Swift Concurrency**: Fully audit the codebase for Swift Concurrency compatibility (strict concurrency checks).
 - [ ] **Swift Native Regex**: Expand usage of Swift Native Regex where possible, while maintaining Foundation as a robust fallback.

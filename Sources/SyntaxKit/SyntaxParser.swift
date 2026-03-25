@@ -1,6 +1,6 @@
 import Foundation
 
-public final class SyntaxParser {
+public final class SyntaxParser: Sendable {
     private let registry: GrammarRegistry
     private let defaultGrammar: ResolvedGrammar?
 

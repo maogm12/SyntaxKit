@@ -15,17 +15,26 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "SyntaxKit"
+            name: "SyntaxKit",
+            swiftSettings: [
+                .enableUpcomingFeature("StrictConcurrency")
+            ]
         ),
         .executableTarget(
             name: "SyntaxKitCLI",
-            dependencies: ["SyntaxKit"]
+            dependencies: ["SyntaxKit"],
+            swiftSettings: [
+                .enableUpcomingFeature("StrictConcurrency")
+            ]
         ),
         .testTarget(
             name: "SyntaxKitTests",
             dependencies: ["SyntaxKit"],
             resources: [
                 .copy("Fixtures")
+            ],
+            swiftSettings: [
+                .enableUpcomingFeature("StrictConcurrency")
             ]
         ),
         .testTarget(
@@ -33,6 +42,9 @@ let package = Package(
             dependencies: ["SyntaxKitCLI", "SyntaxKit"],
             resources: [
                 .copy("Fixtures")
+            ],
+            swiftSettings: [
+                .enableUpcomingFeature("StrictConcurrency")
             ]
         )
     ]
