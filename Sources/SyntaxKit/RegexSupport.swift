@@ -86,7 +86,10 @@ struct SwiftNativeRegexBackend: BuiltinRegexBackend {
 
     func compile(pattern: String) throws -> CompiledRegex {
         do {
-            let box = SwiftNativeRegexBox(regex: try Regex(pattern))
+            // We use .unicodeScalarSemantics to match TextMate's behavior more closely for some patterns,
+            // but we fall back to default if it fails.
+            let regex = try Regex(pattern)
+            let box = SwiftNativeRegexBox(regex: regex)
             return CompiledRegex(pattern: pattern) { string, location in
                 swiftNativeFirstMatch(regex: box.regex, in: string, from: location)
             }

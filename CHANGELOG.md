@@ -6,6 +6,12 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [2.1.1] - 2026-03-24
+
+### Improved
+
+- Expanded Swift Native Regex backend usage and optimized its integration within the default regex engine.
+
 ## [2.1.0] - 2026-03-24
 
 ### Added

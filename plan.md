@@ -376,4 +376,4 @@ The compatibility shim should explicitly not promise to emulate:
 
 ### Modernization
 - [x] **Swift Concurrency**: Fully audit the codebase for Swift Concurrency compatibility (strict concurrency checks).
-- [ ] **Swift Native Regex**: Expand usage of Swift Native Regex where possible, while maintaining Foundation as a robust fallback.
+- [x] **Swift Native Regex**: Expand usage of Swift Native Regex where possible, while maintaining Foundation as a robust fallback.
