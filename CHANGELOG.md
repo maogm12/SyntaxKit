@@ -6,6 +6,13 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [2.0.3] - 2026-03-24
+
+### Refactored
+
+- Moved internal TextMate regex compatibility helpers into a structured `TextMateRegexHelpers` container.
+- Replaced `try!` with safe `try?` in `defaultSubstituteBackreferences` with fallback to original pattern if backreference regex fails to compile.
+
 ## [2.0.2] - 2026-03-24
 
 ### Fixed

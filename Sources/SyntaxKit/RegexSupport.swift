@@ -203,15 +203,18 @@ private func defaultRegexBackends() -> [any BuiltinRegexBackend] {
     return backends
 }
 
-private let singleQuotedNamedGroupRegex = try! NSRegularExpression(pattern: #"\(\?'([[:word:]]+)'"#, options: [])
-private let singleQuotedNamedBackreferenceRegex = try! NSRegularExpression(pattern: #"\\k'([[:word:]]+)'"#, options: [])
-private let relativeNamedBackreferenceRegex = try! NSRegularExpression(pattern: #"\\k(?:<[^>]*[+-][0-9]+>|'[^']*[+-][0-9]+')"#, options: [])
-private let onigurumaRubyMultilineOptionRegex = try! NSRegularExpression(pattern: #"\(\?[[:alpha:]-]*m[[:alpha:]-]*:?"#, options: [])
+private struct TextMateRegexHelpers {
+    static let singleQuotedNamedGroupRegex = try! NSRegularExpression(pattern: #"\(\?'([[:word:]]+)'"#, options: [])
+    static let singleQuotedNamedBackreferenceRegex = try! NSRegularExpression(pattern: #"\\k'([[:word:]]+)'"#, options: [])
+    static let relativeNamedBackreferenceRegex = try! NSRegularExpression(pattern: #"\\k(?:<[^>]*[+-][0-9]+>|'[^']*[+-][0-9]+')"#, options: [])
+    static let onigurumaRubyMultilineOptionRegex = try! NSRegularExpression(pattern: #"\(\?[[:alpha:]-]*m[[:alpha:]-]*:?"#, options: [])
+}
 
 extension String {
     func syntaxKitRewritingSingleQuotedNamedGroups() -> String {
+        let regex = TextMateRegexHelpers.singleQuotedNamedGroupRegex
         let range = NSRange(location: 0, length: (self as NSString).length)
-        return singleQuotedNamedGroupRegex.stringByReplacingMatches(
+        return regex.stringByReplacingMatches(
             in: self,
             options: [],
             range: range,
@@ -220,8 +223,9 @@ extension String {
     }
 
     func syntaxKitRewritingSingleQuotedNamedBackreferences() -> String {
+        let regex = TextMateRegexHelpers.singleQuotedNamedBackreferenceRegex
         let range = NSRange(location: 0, length: (self as NSString).length)
-        return singleQuotedNamedBackreferenceRegex.stringByReplacingMatches(
+        return regex.stringByReplacingMatches(
             in: self,
             options: [],
             range: range,
@@ -230,12 +234,14 @@ extension String {
     }
 
     var syntaxKitUsesRelativeNamedBackreference: Bool {
+        let regex = TextMateRegexHelpers.relativeNamedBackreferenceRegex
         let range = NSRange(location: 0, length: (self as NSString).length)
-        return relativeNamedBackreferenceRegex.firstMatch(in: self, options: [], range: range) != nil
+        return regex.firstMatch(in: self, options: [], range: range) != nil
     }
 
     var syntaxKitUsesOnigurumaRubyMultilineOption: Bool {
+        let regex = TextMateRegexHelpers.onigurumaRubyMultilineOptionRegex
         let range = NSRange(location: 0, length: (self as NSString).length)
-        return onigurumaRubyMultilineOptionRegex.firstMatch(in: self, options: [], range: range) != nil
+        return regex.firstMatch(in: self, options: [], range: range) != nil
     }
 }

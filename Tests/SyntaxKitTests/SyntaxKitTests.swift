@@ -1555,3 +1555,12 @@ private let missingCaptureGrammar = """
         Issue.record("Unexpected error type: \(error)")
     }
 }
+
+@Test func substituteBackreferencesHandlesMissingCaptures() throws {
+    let engine = DefaultRegexEngine()
+    let match = RegexMatch(range: NSRange(location: 0, length: 1), captures: [0: NSRange(location: 0, length: 1)])
+    let result = engine.substituteBackreferences(in: #"\\1"#, using: match, line: "a")
+    // \\1 refers to capture 1, but only capture 0 exists. Should return original pattern fragment or empty replacement.
+    // In current implementation it skips and returns original.
+    #expect(result == #"\\1"#)
+}

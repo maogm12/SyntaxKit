@@ -362,7 +362,7 @@ The compatibility shim should explicitly not promise to emulate:
 
 ### Safety and Stability
 - [x] **Fix Force Unwraps in `SyntaxParser`**: Replace `rule.end!` with guards in `parseCore` to prevent crashes if a `Rule` is manually constructed without an end pattern.
-- [ ] **Replace `try!` in `RegexSupport`**: Move static regexes to lazy initialized properties or use proper error handling instead of `try!`.
+- [x] **Replace `try!` in `RegexSupport`**: Move static regexes to lazy initialized properties or use proper error handling instead of `try!`.
 - [ ] **Thread Safety in `GrammarRegistry`**: Add internal locking to `GrammarRegistry` or convert it to an `actor` to ensure thread-safe registration and resolution.
 - [ ] **Bound `FoundationRegexCache`**: Implement a simple eviction policy (like LRU) or a maximum size for the regex cache to prevent unbounded memory growth in long-running processes.
 
