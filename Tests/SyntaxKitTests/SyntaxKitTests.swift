@@ -919,6 +919,52 @@ func styledTextAdapterSupportsEmptyInputs() throws {
     }
 }
 
+@Test func regexCompatibilityShimRewritesSingleQuotedNamedForms() throws {
+    let shim = TextMateRegexCompatibilityShim(backends: [FoundationRegexBackend()], engineName: "test-default")
+    let compiled = try shim.compile(pattern: #"(?'word'a)\k'word'"#)
+    let match = try #require(compiled.firstMatch(in: "aa", from: 0))
+    #expect(match.range == NSRange(location: 0, length: 2))
+    #expect(#"(?'word'a)"#.syntaxKitRewritingSingleQuotedNamedGroups() == #"(?<word>a)"#)
+    #expect(#"\k'word'"#.syntaxKitRewritingSingleQuotedNamedBackreferences() == #"\k<word>"#)
+}
+
+@Test func regexCompatibilityShimRejectsKnownSemanticMismatches() throws {
+    let shim = TextMateRegexCompatibilityShim(backends: [FoundationRegexBackend()], engineName: "test-default")
+
+    do {
+        _ = try shim.compile(pattern: #"\k<word+1>"#)
+        Issue.record("Expected relative named backreference rejection.")
+    } catch let error as SyntaxKitError {
+        #expect(error.description.contains("relative named backreferences"))
+    }
+
+    do {
+        _ = try shim.compile(pattern: #"(?m)abc"#)
+        Issue.record("Expected Oniguruma Ruby multiline semantic rejection.")
+    } catch let error as SyntaxKitError {
+        #expect(error.description.contains("Oniguruma Ruby-style '(?m)' semantics"))
+    }
+
+    #expect(#"\k<word+1>"#.syntaxKitUsesRelativeNamedBackreference)
+    #expect(#"(?m)abc"#.syntaxKitUsesOnigurumaRubyMultilineOption)
+}
+
+@Test func defaultRegexEngineKeepsBuiltinBackendsBehaviorAligned() throws {
+    let pattern = #"(?<word>a+)(b)"#
+    let source = "zaab"
+    let foundation = try FoundationRegexBackend().compile(pattern: pattern)
+    let foundationMatch = try #require(foundation.firstMatch(in: source, from: 0))
+    #expect(foundationMatch.range == NSRange(location: 1, length: 3))
+    #expect(foundationMatch.captures[1] == NSRange(location: 1, length: 2))
+    #expect(foundationMatch.captures[2] == NSRange(location: 3, length: 1))
+
+    if #available(macOS 13, iOS 16, tvOS 16, watchOS 9, *) {
+        let swiftNative = try SwiftNativeRegexBackend().compile(pattern: pattern)
+        let swiftNativeMatch = try #require(swiftNative.firstMatch(in: source, from: 0))
+        #expect(swiftNativeMatch == foundationMatch)
+    }
+}
+
 @Test func parserRejectsMissingExternalGrammarAtParseTime() throws {
     let grammar = try GrammarLoader.load(data: Data(hostGrammar.utf8))
     let registry = GrammarRegistry(grammars: [grammar])

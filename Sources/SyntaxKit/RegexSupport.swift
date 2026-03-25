@@ -24,16 +24,12 @@ struct TextMateRegexCompatibilityShim: Sendable {
     let engineName: String
 
     func compile(pattern: String) throws -> CompiledRegex {
-        if pattern.contains(#"\g<"#) || pattern.contains(#"\g'"#) {
-            throw SyntaxKitError.regexCompilation(
-                "Regex '\(pattern)' uses Oniguruma subexpression calls unsupported by engine '\(engineName)'."
-            )
-        }
+        let normalizedPattern = try normalizedPattern(from: pattern)
 
         var failures: [String] = []
         for backend in backends {
             do {
-                return try backend.compile(pattern: pattern)
+                return try backend.compile(pattern: normalizedPattern)
             } catch let error as SyntaxKitError {
                 failures.append("\(backend.name): \(error.description)")
             }
@@ -41,6 +37,30 @@ struct TextMateRegexCompatibilityShim: Sendable {
 
         let details = failures.joined(separator: " | ")
         throw SyntaxKitError.regexCompilation("Failed to compile regex '\(pattern)' with engine '\(engineName)'. \(details)")
+    }
+
+    private func normalizedPattern(from pattern: String) throws -> String {
+        if pattern.contains(#"\g<"#) || pattern.contains(#"\g'"#) {
+            throw SyntaxKitError.regexCompilation(
+                "Regex '\(pattern)' uses Oniguruma subexpression calls unsupported by engine '\(engineName)'."
+            )
+        }
+
+        if pattern.syntaxKitUsesOnigurumaRubyMultilineOption {
+            throw SyntaxKitError.regexCompilation(
+                "Regex '\(pattern)' uses Oniguruma Ruby-style '(?m)' semantics, which differ from engine '\(engineName)'. Rewrite the pattern or provide a custom RegexEngine."
+            )
+        }
+
+        if pattern.syntaxKitUsesRelativeNamedBackreference {
+            throw SyntaxKitError.regexCompilation(
+                "Regex '\(pattern)' uses Oniguruma relative named backreferences unsupported by engine '\(engineName)'."
+            )
+        }
+
+        return pattern
+            .syntaxKitRewritingSingleQuotedNamedGroups()
+            .syntaxKitRewritingSingleQuotedNamedBackreferences()
     }
 }
 
@@ -177,4 +197,41 @@ private func defaultRegexBackends() -> [any BuiltinRegexBackend] {
     }
     backends.append(FoundationRegexBackend())
     return backends
+}
+
+private let singleQuotedNamedGroupRegex = try! NSRegularExpression(pattern: #"\(\?'([[:word:]]+)'"#, options: [])
+private let singleQuotedNamedBackreferenceRegex = try! NSRegularExpression(pattern: #"\\k'([[:word:]]+)'"#, options: [])
+private let relativeNamedBackreferenceRegex = try! NSRegularExpression(pattern: #"\\k(?:<[^>]*[+-][0-9]+>|'[^']*[+-][0-9]+')"#, options: [])
+private let onigurumaRubyMultilineOptionRegex = try! NSRegularExpression(pattern: #"\(\?[[:alpha:]-]*m[[:alpha:]-]*:?"#, options: [])
+
+extension String {
+    func syntaxKitRewritingSingleQuotedNamedGroups() -> String {
+        let range = NSRange(location: 0, length: (self as NSString).length)
+        return singleQuotedNamedGroupRegex.stringByReplacingMatches(
+            in: self,
+            options: [],
+            range: range,
+            withTemplate: "(?<$1>"
+        )
+    }
+
+    func syntaxKitRewritingSingleQuotedNamedBackreferences() -> String {
+        let range = NSRange(location: 0, length: (self as NSString).length)
+        return singleQuotedNamedBackreferenceRegex.stringByReplacingMatches(
+            in: self,
+            options: [],
+            range: range,
+            withTemplate: #"\\k<$1>"#
+        )
+    }
+
+    var syntaxKitUsesRelativeNamedBackreference: Bool {
+        let range = NSRange(location: 0, length: (self as NSString).length)
+        return relativeNamedBackreferenceRegex.firstMatch(in: self, options: [], range: range) != nil
+    }
+
+    var syntaxKitUsesOnigurumaRubyMultilineOption: Bool {
+        let range = NSRange(location: 0, length: (self as NSString).length)
+        return onigurumaRubyMultilineOptionRegex.firstMatch(in: self, options: [], range: range) != nil
+    }
 }

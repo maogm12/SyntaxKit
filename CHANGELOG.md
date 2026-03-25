@@ -6,6 +6,14 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-03-24
+
+### Added
+
+- Added compatibility-shim rewrites for Oniguruma single-quoted named capture groups and named backreferences so common TextMate patterns can compile under the built-in default engine
+- Added targeted default-engine diagnostics for Oniguruma relative named backreferences and Ruby-style `(?m)` option usage when those constructs would silently diverge from TextMate semantics
+- Added regression tests that keep Foundation and Swift-native backend match results aligned under the shared `CompiledRegex` abstraction
+
 ## [1.8.0] - 2026-03-24
 
 ### Added

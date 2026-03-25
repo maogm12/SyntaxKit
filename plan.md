@@ -283,7 +283,7 @@ The parser should not care which regex backend is active, and app authors should
 - [x] Introduce a built-in `DefaultRegexEngine`
 - [x] Implement its baseline behavior with `NSRegularExpression`
 - [x] Evaluate using Swift native regex APIs internally where the active Swift toolchain supports the required match and capture behavior cleanly
-- [ ] Keep the built-in engine's observable behavior stable even if its internal implementation changes between Foundation and Swift-native code paths
+- [x] Keep the built-in engine's observable behavior stable even if its internal implementation changes between Foundation and Swift-native code paths
 - [x] Treat Swift native regex as an implementation detail of the default engine unless there is a strong reason to expose separate built-in engine kinds
 
 ### Compatibility Shim Layer
@@ -294,10 +294,10 @@ The parser should not care which regex backend is active, and app authors should
 
 The compatibility shim should cover:
 
-- [ ] pattern preprocessing and normalization where a safe rewrite is possible
+- [x] pattern preprocessing and normalization where a safe rewrite is possible
 - [x] begin/end backreference substitution and escaping
 - [x] targeted rejection of clearly unsupported Oniguruma/TextMate constructs
-- [ ] targeted diagnostics for patterns likely to differ semantically from TextMate behavior
+- [x] targeted diagnostics for patterns likely to differ semantically from TextMate behavior
 - [x] normalization of match/capture results where backend output shape needs small adjustments
 
 The compatibility shim should explicitly not promise to emulate:
@@ -319,15 +319,15 @@ The compatibility shim should explicitly not promise to emulate:
   - [x] compatibility shim
   - [x] concrete regex engine
 - [ ] Ensure custom engines can be used either:
-  - [ ] directly, with no SyntaxKit shim
+  - [x] directly, with no SyntaxKit shim
   - [ ] wrapped by the built-in compatibility shim if we decide to expose that option later
 
 ### Validation and Diagnostics
 
 - [x] Keep regex compilation failures surfaced as `SyntaxKitError.regexCompilation`
 - [x] Include the active regex engine name in diagnostics when helpful
-- [ ] Add targeted diagnostics when a pattern fails under the built-in engine and appears to rely on unsupported TextMate/Oniguruma features
-- [ ] Prefer simple, actionable diagnostics over a full regex static-analysis system in the first pass
+- [x] Add targeted diagnostics when a pattern fails under the built-in engine and appears to rely on unsupported TextMate/Oniguruma features
+- [x] Prefer simple, actionable diagnostics over a full regex static-analysis system in the first pass
 - [ ] Distinguish diagnostic sources where helpful:
   - [x] backend compilation failure
   - [x] compatibility-shim rejection
@@ -343,9 +343,9 @@ The compatibility shim should explicitly not promise to emulate:
   - [x] begin/end backreference substitution still works through the abstraction
   - [x] regex compilation failures propagate correctly
 - [x] Add tests for the compatibility shim:
-  - [ ] supported pattern rewrites
+  - [x] supported pattern rewrites
   - [x] unsupported feature rejection
-  - [ ] warning/diagnostic cases
+  - [x] warning/diagnostic cases
   - [x] match-result normalization behavior
 - [x] Keep the existing parser fixture suite passing under the default engine
 - [x] Maintain 100% line coverage for library files while introducing the abstraction
