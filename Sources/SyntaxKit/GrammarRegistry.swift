@@ -2,6 +2,7 @@ import Foundation
 
 public final class GrammarRegistry: @unchecked Sendable {
     private var grammars: [ScopeName: Grammar]
+    private let lock = NSLock()
     let regexEngine: any RegexEngine
 
     public init(grammars: [Grammar] = [], regexEngine: any RegexEngine = DefaultRegexEngine()) {
@@ -13,22 +14,33 @@ public final class GrammarRegistry: @unchecked Sendable {
     }
 
     public func register(_ grammar: Grammar) {
+        lock.lock()
+        defer { lock.unlock() }
         grammars[grammar.scopeName] = grammar
     }
 
     public func register(contentsOf grammars: [Grammar]) {
+        lock.lock()
+        defer { lock.unlock() }
         for grammar in grammars {
-            register(grammar)
+            self.grammars[grammar.scopeName] = grammar
         }
     }
 
     public func grammar(for scopeName: String) -> Grammar? {
-        grammars[ScopeName(rawValue: scopeName)]
+        lock.lock()
+        defer { lock.unlock() }
+        return grammars[ScopeName(rawValue: scopeName)]
     }
 
     public func resolve(scopeName: String) throws -> ResolvedGrammar {
         let scope = ScopeName(rawValue: scopeName)
-        guard let grammar = grammars[scope] else {
+        
+        lock.lock()
+        let grammar = grammars[scope]
+        lock.unlock()
+
+        guard let grammar = grammar else {
             throw SyntaxKitError.resolution("No grammar registered for scope '\(scopeName)'.")
         }
 
@@ -43,7 +55,9 @@ public final class GrammarRegistry: @unchecked Sendable {
     }
 
     public var registeredScopeNames: [String] {
-        grammars.keys.map(\.rawValue).sorted()
+        lock.lock()
+        defer { lock.unlock() }
+        return grammars.keys.map(\.rawValue).sorted()
     }
 
     private func validateReferences(_ rules: [Rule], in grammar: Grammar, visitedRules: inout Set<String>) throws {
@@ -64,7 +78,11 @@ public final class GrammarRegistry: @unchecked Sendable {
                 case .self:
                     try validateReferences(grammar.patterns, in: grammar, visitedRules: &visitedRules)
                 case .external(let scope):
-                    guard let externalGrammar = grammars[scope] else {
+                    lock.lock()
+                    let externalGrammar = grammars[scope]
+                    lock.unlock()
+                    
+                    guard let externalGrammar = externalGrammar else {
                         throw SyntaxKitError.resolution("Grammar '\(grammar.scopeName)' includes unknown external grammar '\(scope.rawValue)'.")
                     }
                     try validateReferences(externalGrammar.patterns, in: externalGrammar, visitedRules: &visitedRules)

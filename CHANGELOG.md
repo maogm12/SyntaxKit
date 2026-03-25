@@ -6,6 +6,12 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [2.0.4] - 2026-03-24
+
+### Fixed
+
+- Added `NSLock` to `GrammarRegistry` to ensure thread-safe access to the internal grammar registry when registering or resolving grammars from multiple threads.
+
 ## [2.0.3] - 2026-03-24
 
 ### Refactored
