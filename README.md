@@ -140,6 +140,30 @@ let registry = GrammarRegistry(
 
 Custom engines plug straight into `GrammarRegistry` and `SyntaxParser`. They do not go through SyntaxKit's internal compatibility shim unless you choose to replicate that behavior yourself.
 
+### Engine Matrix
+
+| Engine path | Provided by SyntaxKit | Compatibility shim | Best for |
+| --- | --- | --- | --- |
+| `DefaultRegexEngine` | Yes | Yes, internal only | Portable app and CLI integration |
+| Custom `RegexEngine` | App-provided | No, by default | Apps that need engine-specific semantics |
+
+### v1 Decisions
+
+- The CLI stays on `DefaultRegexEngine` in v1. There is no engine-selection flag.
+- Swift native regex remains an implementation detail of the default engine in v1.
+- SyntaxKit does not ship a separate Oniguruma package product in v1.
+- SyntaxKit does not expose the internal compatibility shim as a public wrapper around custom engines in v1.
+- Likely semantic mismatches, such as Oniguruma Ruby-style `(?m)` option usage, are surfaced as compile errors instead of warnings so they do not silently change meaning.
+
+### Explicit Non-Goals
+
+The built-in compatibility shim does not try to emulate:
+
+- recursive or subexpression-call semantics such as `\g<...>`
+- regex-engine backtracking parity across backends
+- look-behind behavior that depends on engine-level support
+- VM-specific constructs that cannot be made portable with syntax rewriting
+
 ## Load A Grammar
 
 ```swift

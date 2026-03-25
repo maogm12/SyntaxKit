@@ -35,8 +35,7 @@ struct TextMateRegexCompatibilityShim: Sendable {
             }
         }
 
-        let details = failures.joined(separator: " | ")
-        throw SyntaxKitError.regexCompilation("Failed to compile regex '\(pattern)' with engine '\(engineName)'. \(details)")
+        throw aggregatedBackendFailure(pattern: pattern, engineName: engineName, failures: failures)
     }
 
     private func normalizedPattern(from pattern: String) throws -> String {
@@ -62,6 +61,11 @@ struct TextMateRegexCompatibilityShim: Sendable {
             .syntaxKitRewritingSingleQuotedNamedGroups()
             .syntaxKitRewritingSingleQuotedNamedBackreferences()
     }
+}
+
+func aggregatedBackendFailure(pattern: String, engineName: String, failures: [String]) -> SyntaxKitError {
+    let details = failures.joined(separator: " | ")
+    return SyntaxKitError.regexCompilation("Failed to compile regex '\(pattern)' with engine '\(engineName)'. \(details)")
 }
 
 struct FoundationRegexBackend: BuiltinRegexBackend {

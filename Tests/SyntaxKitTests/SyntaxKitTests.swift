@@ -281,6 +281,16 @@ import Testing
     #expect(viaResolved.contains(where: { $0.scopes.contains("constant.language.simple") && $0.style.foreground?.rawValue == "#202020" }))
 }
 
+@Test func themingRemainsIndependentFromRegexBackendChoice() throws {
+    let grammar = try GrammarLoader.load(data: Data(simpleCustomEngineGrammar.utf8))
+    let theme = try ThemeLoader.load(data: Data(customEngineHighlightTheme.utf8))
+    let registry = GrammarRegistry(grammars: [grammar], regexEngine: RecordingRegexEngine())
+    let themed = try SyntaxHighlighter.highlight("x", using: "source.custom-engine", registry: registry, theme: theme)
+    let first = try #require(themed.first)
+    #expect(first.scopes.contains("constant.custom-engine"))
+    #expect(first.style.foreground?.rawValue == "#55AA55")
+}
+
 @Test @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
 func styledTextAdapterBuildsRunsAndAttributedOutputs() throws {
     let style = ThemeStyle(
@@ -1468,6 +1478,21 @@ private let simpleHighlightTheme = """
     <dict><key>settings</key><dict><key>foreground</key><string>#FFFFFF</string><key>background</key><string>#000000</string></dict></dict>
     <dict><key>scope</key><string>constant.numeric</string><key>settings</key><dict><key>foreground</key><string>#101010</string></dict></dict>
     <dict><key>scope</key><string>constant.language</string><key>settings</key><dict><key>foreground</key><string>#202020</string></dict></dict>
+  </array>
+</dict>
+</plist>
+"""
+
+private let customEngineHighlightTheme = """
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>name</key><string>Custom Engine Highlight</string>
+  <key>settings</key>
+  <array>
+    <dict><key>settings</key><dict><key>foreground</key><string>#FFFFFF</string><key>background</key><string>#000000</string></dict></dict>
+    <dict><key>scope</key><string>constant.custom-engine</string><key>settings</key><dict><key>foreground</key><string>#55AA55</string></dict></dict>
   </array>
 </dict>
 </plist>
