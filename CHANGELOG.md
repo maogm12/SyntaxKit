@@ -6,6 +6,14 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [2.2.1] - 2026-03-24
+
+### Improved
+
+- Significantly improved parsing performance by pre-compiling regexes during grammar expansion and caching them in `ResolvedRule`.
+- Optimized `availablePatterns` caching by using parent rule IDs instead of expensive string joins for cache keys.
+- Reduced redundant regex lookups in `bestCandidate` by directly accessing pre-compiled regexes.
+
 ## [2.2.0] - 2026-03-24
 
 ### Added

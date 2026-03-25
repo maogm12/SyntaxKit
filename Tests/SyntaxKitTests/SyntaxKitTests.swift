@@ -1071,14 +1071,14 @@ func styledTextAdapterSupportsEmptyInputs() throws {
 
     let patternParser = SyntaxParser(registry: registry)
     do {
-        _ = try patternParser.availablePatterns(in: unresolvedRepositoryGrammar, from: unresolvedRepositoryGrammar.patterns)
+        _ = try patternParser.availablePatterns(in: unresolvedRepositoryGrammar, parent: nil)
         Issue.record("Expected unresolved repository include to fail during pattern expansion.")
     } catch let error as SyntaxKitError {
         #expect(error.description.contains("Missing repository rule"))
     }
 
     do {
-        _ = try patternParser.availablePatterns(in: unresolvedExternalGrammar, from: unresolvedExternalGrammar.patterns)
+        _ = try patternParser.availablePatterns(in: unresolvedExternalGrammar, parent: nil)
         Issue.record("Expected unresolved external include to fail during pattern expansion.")
     } catch let error as SyntaxKitError {
         #expect(error.description.contains("Missing external grammar"))

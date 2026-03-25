@@ -367,18 +367,16 @@ public final class SyntaxParser: Sendable {
             )
         }
 
-        let patterns = try availablePatterns(in: contexts.last?.grammar ?? rootGrammar, from: contexts.last?.rule.patterns ?? rootGrammar.patterns)
+        let patterns = try availablePatterns(in: contexts.last?.grammar ?? rootGrammar, parent: contexts.last?.rule)
         for (index, resolvedRule) in patterns.enumerated() {
             let rule = resolvedRule.rule
-            if let matchPattern = rule.match {
-                let regex = try registry.compiledRegex(for: matchPattern)
+            if let regex = resolvedRule.matchRegex {
                 guard let match = regex.firstMatch(in: line, from: location) else { continue }
                 if match.range.location == location {
                     return Candidate(kind: .match(rule, resolvedRule.grammar, match), start: match.range.location, order: index)
                 }
                 best = chooseBetter(current: best, challenger: Candidate(kind: .match(rule, resolvedRule.grammar, match), start: match.range.location, order: index))
-            } else if let beginPattern = rule.begin {
-                let regex = try registry.compiledRegex(for: beginPattern)
+            } else if let regex = resolvedRule.beginRegex {
                 guard let match = regex.firstMatch(in: line, from: location) else { continue }
                 if match.range.location == location {
                     return Candidate(kind: .begin(rule, resolvedRule.grammar, match), start: match.range.location, order: index)
@@ -407,16 +405,17 @@ public final class SyntaxParser: Sendable {
         }
     }
 
-    func availablePatterns(in grammar: Grammar, from rules: [Rule]) throws -> [ResolvedRule] {
-        if let cached = registry.cachedPatterns(for: grammar, rules: rules) {
+    func availablePatterns(in grammar: Grammar, parent: Rule?) throws -> [ResolvedRule] {
+        if let cached = registry.cachedPatterns(for: grammar, parent: parent) {
             return cached
         }
 
+        let rules = parent?.patterns ?? grammar.patterns
         var results: [ResolvedRule] = []
         var visited = Set<String>()
         try expand(rules, in: grammar, visited: &visited, into: &results)
         
-        registry.setCachedPatterns(results, for: grammar, rules: rules)
+        registry.setCachedPatterns(results, for: grammar, parent: parent)
         return results
     }
 
@@ -445,8 +444,12 @@ public final class SyntaxParser: Sendable {
                 continue
             }
 
-            if rule.match != nil || rule.begin != nil {
-                results.append(ResolvedRule(rule: rule, grammar: grammar))
+            if let matchPattern = rule.match {
+                let regex = try registry.compiledRegex(for: matchPattern)
+                results.append(ResolvedRule(rule: rule, grammar: grammar, matchRegex: regex, beginRegex: nil))
+            } else if let beginPattern = rule.begin {
+                let regex = try registry.compiledRegex(for: beginPattern)
+                results.append(ResolvedRule(rule: rule, grammar: grammar, matchRegex: nil, beginRegex: regex))
             } else if !rule.patterns.isEmpty {
                 let token = "\(grammar.scopeName.rawValue)::container::\(rule.id)"
                 if visited.contains(token) {
@@ -459,9 +462,11 @@ public final class SyntaxParser: Sendable {
     }
 }
 
-struct ResolvedRule {
+struct ResolvedRule: Sendable {
     let rule: Rule
     let grammar: Grammar
+    let matchRegex: CompiledRegex?
+    let beginRegex: CompiledRegex?
 }
 
 private struct ContextFrame {

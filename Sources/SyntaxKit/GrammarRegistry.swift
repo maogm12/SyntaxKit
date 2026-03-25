@@ -30,23 +30,22 @@ public final class GrammarRegistry: @unchecked Sendable {
         patternCache.removeAll()
     }
 
-    func cachedPatterns(for grammar: Grammar, rules: [Rule]) -> [ResolvedRule]? {
+    func cachedPatterns(for grammar: Grammar, parent: Rule?) -> [ResolvedRule]? {
         lock.lock()
         defer { lock.unlock() }
-        let key = cacheKey(for: grammar, rules: rules)
+        let key = cacheKey(for: grammar, parent: parent)
         return patternCache[key]
     }
 
-    func setCachedPatterns(_ resolved: [ResolvedRule], for grammar: Grammar, rules: [Rule]) {
+    func setCachedPatterns(_ resolved: [ResolvedRule], for grammar: Grammar, parent: Rule?) {
         lock.lock()
         defer { lock.unlock() }
-        let key = cacheKey(for: grammar, rules: rules)
+        let key = cacheKey(for: grammar, parent: parent)
         patternCache[key] = resolved
     }
 
-    private func cacheKey(for grammar: Grammar, rules: [Rule]) -> String {
-        let ruleIDs = rules.map { String($0.id) }.joined(separator: ",")
-        return "\(grammar.scopeName.rawValue)[\(ruleIDs)]"
+    private func cacheKey(for grammar: Grammar, parent: Rule?) -> String {
+        "\(grammar.scopeName.rawValue)[\(parent?.id ?? -1)]"
     }
 
     public func grammar(for scopeName: String) -> Grammar? {
