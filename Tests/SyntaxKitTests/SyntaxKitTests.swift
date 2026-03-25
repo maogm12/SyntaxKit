@@ -823,6 +823,19 @@ func styledTextAdapterSupportsEmptyInputs() throws {
     #expect(IncludeReference(rawValue: "#repo") == .repository("repo"))
     #expect(IncludeReference(rawValue: "source.external") == .external(ScopeName(rawValue: "source.external")))
 
+    let compiled = CompiledRegex(pattern: "x") { string, offset in
+        string == "x" && offset == 0 ? RegexMatch(range: NSRange(location: 0, length: 1), captures: [0: NSRange(location: 0, length: 1)]) : nil
+    }
+    #expect(compiled.pattern == "x")
+    #expect(compiled.firstMatch(in: "x", from: 0)?.range == NSRange(location: 0, length: 1))
+
+    let engine = DefaultRegexEngine()
+    #expect(engine.name == "default")
+    let regex = try engine.compile(pattern: "a+")
+    #expect(regex.firstMatch(in: "caa", from: 0)?.range == NSRange(location: 1, length: 2))
+    let beginMatch = RegexMatch(range: NSRange(location: 0, length: 1), captures: [1: NSRange(location: 0, length: 1)])
+    #expect(engine.substituteBackreferences(in: #"\1"#, using: beginMatch, line: "a") == "a")
+
     #expect(SyntaxKitError.cli("hello").description == "hello")
     #expect("one two".syntaxKitScopeComponents == ["one", "two"])
     #expect(#"\\1"#.syntaxKitContainsBackreference)
@@ -917,7 +930,7 @@ func styledTextAdapterSupportsEmptyInputs() throws {
     #expect(spans.contains(where: { $0.scopes.contains("constant.self") }))
 
     let beginMatch = RegexMatch(range: NSRange(location: 0, length: 1), captures: [:])
-    let substituted = substituteBackreferences(pattern: #"\\1"#, using: beginMatch, in: "a")
+    let substituted = defaultSubstituteBackreferences(pattern: #"\\1"#, using: beginMatch, in: "a")
     #expect(substituted == #"\\1"#)
 }
 

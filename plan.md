@@ -242,122 +242,124 @@ Regex compatibility should account for the fact that TextMate documents its gram
 - [x] Decide whether to support additional grammar formats beyond plist `.tmLanguage`
 - [x] Design an incremental parsing API without coupling it to rendering
 - [x] Decide the exact public style/color model for theme output
-- [ ] Add regex-engine compatibility tracking for TextMate's Oniguruma syntax
+- [x] Add regex-engine compatibility tracking for TextMate's Oniguruma syntax
 
-## Regex Engine Compatibility Plan
+## Regex Engine Plan
 
-### Why This Needs Its Own Workstream
+### Goal
 
-TextMate's manual explicitly says grammars use Oniguruma and reproduces the Oniguruma 5.6.0 syntax in `ONIG_SYNTAX_RUBY`. The current `SyntaxKit` implementation uses `NSRegularExpression`, which is effectively ICU-style regex behavior. These engines overlap heavily, but they are not syntax-identical and they do not expose the same advanced constructs.
+Keep the regex story simple and extensible:
 
-This matters because grammar authors often rely on engine-specific behavior in:
+- [ ] let the library accept a user-implemented regex engine
+- [x] ship one built-in default regex engine
+- [x] make the built-in default engine Foundation-backed today
+- [ ] allow the built-in default engine to use Swift native regex support internally on toolchains where that is a good fit
+- [ ] add a compatibility shim layer so the default engine is not just "raw backend behavior"
 
-- begin/end patterns with backreferences
-- nested language patterns using look-around
-- advanced capture and backreference forms
-- recursive or quasi-recursive grammar tricks that depend on Oniguruma-only constructs
+The parser should not care which regex backend is active, and app authors should be able to plug in a different engine later without forking SyntaxKit.
 
-### Key Compatibility Findings
+### Compatibility Position
 
-- [ ] Track TextMate as the compatibility target: Oniguruma 5.6.0, Ruby syntax
-- [ ] Keep ICU/`NSRegularExpression` as the current default backend while compatibility work is in progress
+- [ ] Keep documenting TextMate compatibility as an Oniguruma-targeted goal, not as something the default engine fully guarantees
+- [ ] Treat the built-in engine as the portable default, not as a promise of exact TextMate regex semantics
+- [ ] Keep the design open for a future Oniguruma-backed engine without requiring it now
+- [ ] Treat the compatibility shim as a best-effort bridge for common TextMate patterns, not as a complete replacement for a real Oniguruma engine
 
-Known differences to account for in planning:
+### Public API Direction
 
-- [ ] Oniguruma supports subexpression calls like `\g<name>` / `\g<n>` and recursive call patterns documented in the TextMate regex manual; ICU documents named backreferences `\k<name>` but does not document Oniguruma-style subexpression calls
-- [ ] Oniguruma allows duplicate named groups with defined backreference behavior; ICU/`NSRegularExpression` behavior should not be assumed equivalent without explicit tests
-- [ ] Look-behind constraints differ in wording and likely edge-case behavior: Oniguruma documents fixed-length look-behind with top-level alternative exceptions, while ICU documents that look-behind must not have unbounded length
-- [ ] Character class syntax differs: ICU documents set subtraction `--` in addition to intersection `&&`, while TextMate's embedded Oniguruma reference documents intersection but not ICU-style subtraction
-- [ ] ICU documents constructs like `\Q...\E`, `\R`, `\X`, and `\N{...}` that are not part of the TextMate Oniguruma excerpt and should not be treated as part of the TextMate compatibility surface by default
-- [ ] Option and capture semantics may differ once named groups appear; TextMate's embedded Oniguruma reference documents special behavior around numbered backrefs/calls when named groups exist
+- [x] Add a public `RegexEngine` protocol or equivalent public abstraction that app code can implement
+- [ ] Keep the engine contract minimal and parser-focused:
+  - [ ] compile a pattern
+  - [ ] search a single line from a UTF-16 offset
+  - [ ] return the full match range and capture ranges
+  - [ ] support escaped backreference substitution for `begin`/`end`
+- [x] Avoid exposing backend-native regex types in the public API
+- [ ] Add parser and/or registry initializers that accept a custom regex engine
+- [x] Preserve current convenience initializers so existing users keep getting a default engine automatically
+- [ ] Keep the compatibility shim internal so app integrators can provide a raw engine without having to implement SyntaxKit-specific compatibility logic unless they want to
 
-### Architecture Tasks
+### Default Engine Strategy
 
-- [ ] Introduce an internal `RegexEngine` protocol or equivalent abstraction for:
-  - [ ] compile pattern
-  - [ ] search from UTF-16 offset within a single line
-  - [ ] expose match range and capture ranges
-  - [ ] support begin-capture substitution into end patterns
-  - [ ] expose engine identity/capabilities for diagnostics
-- [ ] Move the current `NSRegularExpression` implementation behind an `ICURegexEngine` or `FoundationRegexEngine`
-- [ ] Ensure the parser depends only on the regex abstraction, not directly on `NSRegularExpression`
-- [ ] Keep parser output and rendering fully decoupled from regex-engine choice
+- [x] Introduce a built-in `DefaultRegexEngine`
+- [x] Implement its baseline behavior with `NSRegularExpression`
+- [ ] Evaluate using Swift native regex APIs internally where the active Swift toolchain supports the required match and capture behavior cleanly
+- [ ] Keep the built-in engine's observable behavior stable even if its internal implementation changes between Foundation and Swift-native code paths
+- [ ] Treat Swift native regex as an implementation detail of the default engine unless there is a strong reason to expose separate built-in engine kinds
 
-### Capability Modeling
+### Compatibility Shim Layer
 
-- [ ] Add an internal capability model describing features relevant to grammar parsing:
-  - [ ] named captures
-  - [ ] named backreferences
-  - [ ] subexpression calls / recursion
-  - [ ] atomic groups
-  - [ ] possessive quantifiers
-  - [ ] look-behind constraints
-  - [ ] character-class set operators
-- [ ] Use capability checks to surface targeted diagnostics when a grammar relies on features unsupported by the active backend
-- [ ] Distinguish between:
-  - [ ] unsupported syntax that should fail during grammar compilation
-  - [ ] syntax accepted by the backend but known to differ from TextMate semantics and should emit a warning/diagnostic
+- [ ] Add an internal compatibility adapter in front of the concrete regex backend used by the built-in engine
+- [ ] Make the adapter responsible for TextMate-oriented behavior that can be reasonably shimmed without changing the parser contract
+- [ ] Keep the adapter separate from the concrete backend so the same shim can wrap Foundation or Swift-native regex implementations
 
-### Backend Roadmap
+The compatibility shim should cover:
 
-- [ ] Phase 1: Harden the current ICU backend
-  - [ ] add compile-time detection for clearly Oniguruma-specific syntax that ICU does not support
-  - [ ] document the currently supported regex subset as "ICU-compatible TextMate grammars"
-  - [ ] add diagnostics that mention engine mismatch explicitly
-- [ ] Phase 2: Add a pluggable Oniguruma-compatible backend
-  - [ ] evaluate backend options:
-    - [ ] Swift package wrapper around native Oniguruma
-    - [ ] vendored C target in SwiftPM
-    - [ ] optional feature flag/product so core package can still build on platforms without native dependency setup
-  - [ ] define how engine selection works:
-    - [ ] parser initializer parameter
-    - [ ] registry-level default
-    - [ ] CLI flag such as `--regex-engine icu|oniguruma`
-- [ ] Phase 3: Make Oniguruma the preferred compatibility backend when available
-  - [ ] preserve ICU backend as a fallback for portability
-  - [ ] keep output contracts identical regardless of engine choice
+- [ ] pattern preprocessing and normalization where a safe rewrite is possible
+- [ ] begin/end backreference substitution and escaping
+- [ ] targeted rejection of clearly unsupported Oniguruma/TextMate constructs
+- [ ] targeted diagnostics for patterns likely to differ semantically from TextMate behavior
+- [ ] normalization of match/capture results where backend output shape needs small adjustments
 
-### Public API and Integration Plan
+The compatibility shim should explicitly not promise to emulate:
 
-- [ ] Keep the current public parsing API stable if possible
-- [ ] If engine selection becomes public, add a minimal Swift-friendly surface such as:
-  - [ ] `RegexEngineKind`
-  - [ ] `SyntaxParser(..., regexEngine: ...)`
-  - [ ] parser/CLI diagnostics that report the active engine
-- [ ] Do not leak backend-native match objects into public API
-- [ ] Keep theme and render layers fully engine-agnostic
+- [ ] true recursive/subexpression-call semantics such as `\g<...>` when the backend cannot execute them
+- [ ] fundamental regex-engine backtracking differences
+- [ ] unsupported look-behind semantics that require engine-level support
+- [ ] any construct whose behavior depends on the backend regex VM rather than syntax rewriting
 
-### CLI and Tooling
+### Internal Refactor Tasks
 
-- [ ] Extend `syntaxkit validate` to report regex-engine compatibility issues
-- [ ] Add CLI engine selection for testing, for example:
-  - [ ] `syntaxkit validate --regex-engine icu`
-  - [ ] `syntaxkit validate --regex-engine oniguruma`
-  - [ ] `syntaxkit parse --regex-engine ...`
-- [ ] Add a compatibility inspection mode or warning output for patterns that are accepted by ICU but may diverge from TextMate/Oniguruma semantics
+- [x] Refactor `RegexCache`, `RegexMatch`, and regex helper functions behind the new abstraction
+- [x] Remove direct `NSRegularExpression` dependencies from parser code
+- [ ] Move regex compilation ownership out of `GrammarRegistry` and into the selected engine
+- [ ] Keep `GrammarRegistry` responsible for grammar registration/resolution only
+- [ ] Keep theming and rendering fully independent from regex backend choice
+- [ ] Decide the layering explicitly:
+  - [ ] parser
+  - [ ] compatibility shim
+  - [ ] concrete regex engine
+- [ ] Ensure custom engines can be used either:
+  - [ ] directly, with no SyntaxKit shim
+  - [ ] wrapped by the built-in compatibility shim if we decide to expose that option later
 
-### Test Strategy
+### Validation and Diagnostics
 
-- [ ] Add a dedicated regex-compatibility fixture suite with patterns grouped by feature:
-  - [ ] shared syntax supported by both engines
-  - [ ] TextMate/Oniguruma-specific syntax
-  - [ ] ICU-only syntax that should be rejected or warned for in TextMate mode
-- [ ] Add unit tests for engine capability detection and diagnostics
-- [ ] Add parser tests that run the same grammar fixtures against multiple backends when available
-- [ ] Add golden tests for known divergence cases, especially:
-  - [ ] subexpression call / recursion
-  - [ ] named backreference behavior
-  - [ ] look-behind edge cases
-  - [ ] atomic and possessive behavior
-  - [ ] character-class operator differences
-- [ ] Keep 100% line coverage for library files while adding backend abstraction
+- [ ] Keep regex compilation failures surfaced as `SyntaxKitError.regexCompilation`
+- [ ] Include the active regex engine name in diagnostics when helpful
+- [ ] Add targeted diagnostics when a pattern fails under the built-in engine and appears to rely on unsupported TextMate/Oniguruma features
+- [ ] Prefer simple, actionable diagnostics over a full regex static-analysis system in the first pass
+- [ ] Distinguish diagnostic sources where helpful:
+  - [ ] backend compilation failure
+  - [ ] compatibility-shim rejection
+  - [ ] compatibility warning about likely semantic mismatch
 
-### Documentation Tasks
+### Test Plan
 
-- [ ] Document the current regex behavior explicitly as ICU-backed, not fully TextMate-Oniguruma-compatible
-- [ ] Document which grammars/features require the Oniguruma backend once available
-- [ ] Add a compatibility matrix to the README:
-  - [ ] feature
-  - [ ] ICU backend status
-  - [ ] Oniguruma backend status
-  - [ ] notes / diagnostics
+- [x] Add tests for the built-in default regex engine contract
+- [ ] Add tests proving a custom regex engine can be injected and used by parsing flows
+- [ ] Add a fake test engine to verify:
+  - [ ] parser uses the injected engine
+  - [ ] capture ranges flow through the abstraction correctly
+  - [ ] begin/end backreference substitution still works through the abstraction
+  - [ ] regex compilation failures propagate correctly
+- [ ] Add tests for the compatibility shim:
+  - [ ] supported pattern rewrites
+  - [ ] unsupported feature rejection
+  - [ ] warning/diagnostic cases
+  - [ ] match-result normalization behavior
+- [ ] Keep the existing parser fixture suite passing under the default engine
+- [ ] Maintain 100% line coverage for library files while introducing the abstraction
+
+### CLI and Integration Tasks
+
+- [ ] Keep the CLI on the built-in default engine for the initial implementation
+- [ ] Consider a later CLI engine-selection option only after the abstraction is stable
+- [ ] Document how apps can provide a custom regex engine in Swift
+- [ ] Document that the CLI uses the default engine plus the built-in compatibility shim
+
+### Future Follow-Ups
+
+- [ ] Revisit whether a separate Oniguruma-backed engine should ship as an optional package product
+- [ ] Revisit whether Swift native regex should become a distinct built-in engine or remain only an implementation detail of the default engine
+- [ ] Add a compatibility matrix to the README once multiple concrete engines exist
+- [ ] Revisit whether the compatibility shim should become a reusable public wrapper around custom engines

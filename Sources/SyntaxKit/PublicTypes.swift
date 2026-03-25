@@ -1,5 +1,44 @@
 import Foundation
 
+public struct RegexMatch: Equatable, Sendable {
+    public let range: NSRange
+    public let captures: [Int: NSRange]
+
+    public init(range: NSRange, captures: [Int: NSRange]) {
+        self.range = range
+        self.captures = captures
+    }
+}
+
+public struct CompiledRegex: @unchecked Sendable {
+    public let pattern: String
+    private let firstMatchClosure: @Sendable (String, Int) -> RegexMatch?
+
+    public init(
+        pattern: String,
+        firstMatch: @escaping @Sendable (String, Int) -> RegexMatch?
+    ) {
+        self.pattern = pattern
+        self.firstMatchClosure = firstMatch
+    }
+
+    public func firstMatch(in string: String, from utf16Offset: Int) -> RegexMatch? {
+        firstMatchClosure(string, utf16Offset)
+    }
+}
+
+public protocol RegexEngine: Sendable {
+    var name: String { get }
+    func compile(pattern: String) throws -> CompiledRegex
+    func substituteBackreferences(in pattern: String, using beginMatch: RegexMatch, line: String) -> String
+}
+
+public extension RegexEngine {
+    func substituteBackreferences(in pattern: String, using beginMatch: RegexMatch, line: String) -> String {
+        defaultSubstituteBackreferences(pattern: pattern, using: beginMatch, in: line)
+    }
+}
+
 public struct ScopeName: RawRepresentable, Hashable, Codable, Sendable, CustomStringConvertible {
     public let rawValue: String
 

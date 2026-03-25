@@ -2,10 +2,11 @@ import Foundation
 
 public final class GrammarRegistry: @unchecked Sendable {
     private var grammars: [ScopeName: Grammar]
-    private let regexCache = RegexCache()
+    let regexEngine: any RegexEngine
 
-    public init(grammars: [Grammar] = []) {
+    public init(grammars: [Grammar] = [], regexEngine: any RegexEngine = DefaultRegexEngine()) {
         self.grammars = [:]
+        self.regexEngine = regexEngine
         for grammar in grammars {
             self.grammars[grammar.scopeName] = grammar
         }
@@ -37,8 +38,8 @@ public final class GrammarRegistry: @unchecked Sendable {
         return ResolvedGrammar(scopeName: grammar.scopeName, grammar: grammar)
     }
 
-    func compiledRegex(for pattern: String) throws -> NSRegularExpression {
-        try regexCache.regex(for: pattern)
+    func compiledRegex(for pattern: String) throws -> CompiledRegex {
+        try regexEngine.compile(pattern: pattern)
     }
 
     public var registeredScopeNames: [String] {

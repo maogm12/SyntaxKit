@@ -160,10 +160,10 @@ public final class SyntaxParser {
                         captures: rule.effectiveBeginCaptures
                     )
 
-                    let resolvedEnd = substituteBackreferences(
-                        pattern: rule.end!,
+                    let resolvedEnd = registry.regexEngine.substituteBackreferences(
+                        in: rule.end!,
                         using: match,
-                        in: absoluteLineInfo.text
+                        line: absoluteLineInfo.text
                     )
                     let endRegex = try registry.compiledRegex(for: resolvedEnd)
                     let contentScopes = delimiterScopes + scopeComponents(from: rule.contentName)
@@ -263,7 +263,7 @@ public final class SyntaxParser {
     ) throws -> Candidate? {
         var best: Candidate?
 
-        if let context = contexts.last, let match = firstMatch(regex: context.endRegex, in: line, from: location) {
+        if let context = contexts.last, let match = context.endRegex.firstMatch(in: line, from: location) {
             best = Candidate(
                 kind: .end(match),
                 start: match.range.location,
@@ -276,12 +276,12 @@ public final class SyntaxParser {
             let rule = resolvedRule.rule
             if let matchPattern = rule.match {
                 let regex = try registry.compiledRegex(for: matchPattern)
-                guard let match = firstMatch(regex: regex, in: line, from: location) else { continue }
+                guard let match = regex.firstMatch(in: line, from: location) else { continue }
                 let candidate = Candidate(kind: .match(rule, resolvedRule.grammar, match), start: match.range.location, order: index)
                 best = chooseBetter(current: best, challenger: candidate)
             } else if let beginPattern = rule.begin {
                 let regex = try registry.compiledRegex(for: beginPattern)
-                guard let match = firstMatch(regex: regex, in: line, from: location) else { continue }
+                guard let match = regex.firstMatch(in: line, from: location) else { continue }
                 let candidate = Candidate(kind: .begin(rule, resolvedRule.grammar, match), start: match.range.location, order: index)
                 best = chooseBetter(current: best, challenger: candidate)
             }
@@ -362,7 +362,7 @@ private struct ContextFrame {
     let rule: Rule
     let grammar: Grammar
     let endPattern: String
-    let endRegex: NSRegularExpression
+    let endRegex: CompiledRegex
     let delimiterScopes: [String]
     let contentScopes: [String]
 }

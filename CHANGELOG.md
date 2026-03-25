@@ -6,6 +6,13 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-03-24
+
+### Added
+
+- Added a public regex-engine abstraction with `RegexEngine`, `CompiledRegex`, and public `RegexMatch` types
+- Added a built-in `DefaultRegexEngine` backed by Foundation regex behavior and refactored the parser to use compiled regex abstractions instead of `NSRegularExpression` directly
+
 ## [1.6.1] - 2026-03-24
 
 ### Fixed
