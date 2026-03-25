@@ -46,26 +46,32 @@ echo "--- Building iOS Demo App ---"
   -parallelizeTargets \
   build)
 
-# Construct .app bundle from the SPM-produced bundle
+# Construct .app bundle
 build_products="$derived_data/Build/Products/Debug-iphonesimulator"
-raw_bundle="$build_products/${scheme}_${scheme}.bundle"
 app_bundle="$build_products/$scheme.app"
+resource_bundle_name="${scheme}_${scheme}.bundle"
+raw_bundle="$build_products/$resource_bundle_name"
 
 # Start clean
 rm -rf "$app_bundle"
-cp -R "$raw_bundle" "$app_bundle"
+mkdir -p "$app_bundle"
 
-# Inject the executable
+# 1. Copy the executable
 cp "$build_products/$scheme" "$app_bundle/$scheme"
 
-# Inject the correct Info.plist
+# 2. Copy the Info.plist
 cp "$demo_dir/Info.plist" "$app_bundle/Info.plist"
 
-# Fix Info.plist values
+# 3. Fix Info.plist values
 plutil -replace CFBundleExecutable -string "$scheme" "$app_bundle/Info.plist"
 plutil -replace MinimumOSVersion -string "16.0" "$app_bundle/Info.plist"
 
-# Create PkgInfo
+# 4. Copy the resource bundle as a subdirectory (Expected by Bundle.module)
+if [[ -d "$raw_bundle" ]]; then
+  cp -R "$raw_bundle" "$app_bundle/"
+fi
+
+# 5. Create PkgInfo
 echo "APPL????" > "$app_bundle/PkgInfo"
 
 echo "--- Code Signing App ---"
