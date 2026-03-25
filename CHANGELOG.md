@@ -6,6 +6,12 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-03-24
+
+### Added
+
+- Added MIT license and updated the README license section to reflect the addition of the LICENSE file.
+
 ## [2.0.0] - 2026-03-24
 
 ### Changed

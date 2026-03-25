@@ -338,4 +338,4 @@ The repo keeps 100% line coverage for library files under `Sources/SyntaxKit`.
 
 ## License
 
-No license file is included in this repository yet.
+SyntaxKit is released under the MIT License. See [LICENSE](LICENSE) for details.

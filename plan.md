@@ -229,6 +229,7 @@ Regex compatibility should account for the fact that TextMate documents its gram
 - [x] [Sources/SyntaxKitCLI/main.swift](/Users/gmao/code/SyntaxKit/Sources/SyntaxKitCLI/main.swift)
 - [x] [Tests/SyntaxKitTests/SyntaxKitTests.swift](/Users/gmao/code/SyntaxKit/Tests/SyntaxKitTests/SyntaxKitTests.swift)
 - [x] [Tests/SyntaxKitCLITests/SyntaxKitCLITests.swift](/Users/gmao/code/SyntaxKit/Tests/SyntaxKitCLITests/SyntaxKitCLITests.swift)
+- [x] [LICENSE](/Users/gmao/code/SyntaxKit/LICENSE)
 - [x] [languages/JSON.tmLanguage](/Users/gmao/code/SyntaxKit/languages/JSON.tmLanguage)
 - [x] [languages/INI.tmLanguage.json](/Users/gmao/code/SyntaxKit/languages/INI.tmLanguage.json)
 - [x] [themes/SampleDark.tmTheme](/Users/gmao/code/SyntaxKit/themes/SampleDark.tmTheme)
