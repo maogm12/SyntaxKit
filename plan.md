@@ -377,3 +377,27 @@ The compatibility shim should explicitly not promise to emulate:
 ### Modernization
 - [x] **Swift Concurrency**: Fully audit the codebase for Swift Concurrency compatibility (strict concurrency checks).
 - [x] **Swift Native Regex**: Expand usage of Swift Native Regex where possible, while maintaining Foundation as a robust fallback.
+
+## iOS Demo App Tasks
+
+### Goal
+Implement a basic iOS demo app that replicates the core features of the macOS demo, showcasing `SyntaxKit`'s syntax highlighting and incremental parsing on mobile.
+
+### Foundation
+- [x] Create `Examples/SyntaxKitIOSDemo/` project structure
+- [x] Port `DemoModel` logic to iOS (replacing `AppKit` with `UIKit` types like `UIColor` and `UIFont`)
+- [x] Ensure bundled grammar and theme resources are accessible in the iOS bundle
+
+### UI and Components
+- [x] Implement `SyntaxTextView` using `UIViewRepresentable` to wrap `UITextView`
+- [x] Bridge `NSAttributedString` updates from the ViewModel to the `UITextView`
+- [x] Build a SwiftUI main view with:
+  - [x] Full-screen editor
+  - [x] Language and Theme selection menus
+  - [x] Live performance metrics (Parse/Render times)
+- [x] Support iOS Dark/Light mode adaptation
+
+### Verification
+- [x] Verify real-time highlighting while typing
+- [x] Verify theme switching and language selection
+- [x] Ensure smooth performance on iOS simulator and devices

@@ -6,6 +6,14 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-03-24
+
+### Added
+
+- New iOS Demo App in `Examples/SyntaxKitIOSDemo/` showcasing `SyntaxKit` features on mobile.
+- Support for real-time syntax highlighting in `UITextView` via `UIViewRepresentable`.
+- SwiftUI interface for grammar and theme selection on iOS.
+
 ## [2.1.1] - 2026-03-24
 
 ### Improved
