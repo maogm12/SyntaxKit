@@ -260,10 +260,10 @@ The parser should not care which regex backend is active, and app authors should
 
 ### Compatibility Position
 
-- [ ] Keep documenting TextMate compatibility as an Oniguruma-targeted goal, not as something the default engine fully guarantees
-- [ ] Treat the built-in engine as the portable default, not as a promise of exact TextMate regex semantics
-- [ ] Keep the design open for a future Oniguruma-backed engine without requiring it now
-- [ ] Treat the compatibility shim as a best-effort bridge for common TextMate patterns, not as a complete replacement for a real Oniguruma engine
+- [x] Keep documenting TextMate compatibility as an Oniguruma-targeted goal, not as something the default engine fully guarantees
+- [x] Treat the built-in engine as the portable default, not as a promise of exact TextMate regex semantics
+- [x] Keep the design open for a future Oniguruma-backed engine without requiring it now
+- [x] Treat the compatibility shim as a best-effort bridge for common TextMate patterns, not as a complete replacement for a real Oniguruma engine
 
 ### Public API Direction
 
@@ -354,8 +354,8 @@ The compatibility shim should explicitly not promise to emulate:
 
 - [x] Keep the CLI on the built-in default engine for the initial implementation
 - [ ] Consider a later CLI engine-selection option only after the abstraction is stable
-- [ ] Document how apps can provide a custom regex engine in Swift
-- [ ] Document that the CLI uses the default engine plus the built-in compatibility shim
+- [x] Document how apps can provide a custom regex engine in Swift
+- [x] Document that the CLI uses the default engine plus the built-in compatibility shim
 
 ### Future Follow-Ups
 

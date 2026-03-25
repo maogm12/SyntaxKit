@@ -14,7 +14,7 @@ It can:
 
 ## Status
 
-`SyntaxKit` is currently at `1.6.0`.
+`SyntaxKit` is currently at `1.8.0`.
 
 The implementation in this repo covers the v1 plan in [plan.md](/Users/gmao/code/SyntaxKit/plan.md).
 
@@ -82,11 +82,63 @@ dependencies: [
 - `GrammarLoader` loads a grammar file into a `Grammar`
 - `GrammarRegistry` stores grammars and resolves includes across them
 - `SyntaxParser` parses text into `SyntaxSpan` values
+- `RegexEngine` lets apps provide a custom line-oriented regex backend
 - `ThemeLoader` loads a `.tmTheme`
 - `ThemeResolver` maps parser spans to `ThemedSpan` values
 - `SyntaxHighlighter` combines parsing and theming in one step
 - `StyledTextAdapter` turns themed spans into runs, `NSAttributedString`, or `AttributedString`
 - `SyntaxLineState` and `IncrementalParseResult` support resumable parsing
+
+## Regex Engines
+
+SyntaxKit targets TextMate grammars, which are historically authored for Oniguruma semantics. The built-in `DefaultRegexEngine` is the portable default for SyntaxKit, but it does not claim full Oniguruma compatibility.
+
+Today, the default engine:
+
+- uses an internal compatibility shim to reject clearly unsupported Oniguruma-only constructs such as subexpression calls
+- prefers Swift native regex APIs on supported toolchains
+- falls back to Foundation regex behavior for portability
+- normalizes matches into SyntaxKit's `CompiledRegex` and `RegexMatch` model
+
+That means:
+
+- apps can use SyntaxKit out of the box on standard Swift platforms
+- the built-in engine should be treated as a best-effort TextMate bridge, not an exact replacement for Oniguruma
+- the design stays open for a future custom or Oniguruma-backed engine without changing the parser API
+
+If your app needs different regex semantics, you can provide your own engine:
+
+```swift
+import Foundation
+import SyntaxKit
+
+struct AppRegexEngine: RegexEngine {
+    let name = "app-regex"
+
+    func compile(pattern: String) throws -> CompiledRegex {
+        let regex = try NSRegularExpression(pattern: pattern)
+        return CompiledRegex(pattern: pattern) { string, offset in
+            let search = NSRange(location: offset, length: (string as NSString).length - offset)
+            guard let match = regex.firstMatch(in: string, range: search) else {
+                return nil
+            }
+
+            var captures: [Int: NSRange] = [:]
+            for index in 0..<match.numberOfRanges {
+                captures[index] = match.range(at: index)
+            }
+            return RegexMatch(range: match.range, captures: captures)
+        }
+    }
+}
+
+let registry = GrammarRegistry(
+    grammars: [grammar],
+    regexEngine: AppRegexEngine()
+)
+```
+
+Custom engines plug straight into `GrammarRegistry` and `SyntaxParser`. They do not go through SyntaxKit's internal compatibility shim unless you choose to replicate that behavior yourself.
 
 ## Load A Grammar
 
@@ -232,6 +284,8 @@ Commands:
 - `parse --json` emits machine-readable parse output
 - `parse --json --theme` emits themed spans as JSON
 - `preview` prints an ANSI-colored debug preview
+
+The CLI always uses the built-in `DefaultRegexEngine`, including its internal compatibility shim. There is no CLI engine-selection flag yet.
 
 ## Bundled Fixtures
 
