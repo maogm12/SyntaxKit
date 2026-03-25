@@ -6,6 +6,12 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [2.0.7] - 2026-03-24
+
+### Improved
+
+- Optimized the `bestCandidate` search in `SyntaxParser` with an early exit strategy when a match is found at the current cursor position, reducing unnecessary regex executions.
+
 ## [2.0.6] - 2026-03-24
 
 ### Improved

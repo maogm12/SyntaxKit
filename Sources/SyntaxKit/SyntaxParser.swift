@@ -316,6 +316,13 @@ public final class SyntaxParser {
         var best: Candidate?
 
         if let context = contexts.last, let match = context.endRegex.firstMatch(in: line, from: location) {
+            if match.range.location == location {
+                return Candidate(
+                    kind: .end(match),
+                    start: match.range.location,
+                    order: -1
+                )
+            }
             best = Candidate(
                 kind: .end(match),
                 start: match.range.location,
@@ -329,13 +336,17 @@ public final class SyntaxParser {
             if let matchPattern = rule.match {
                 let regex = try registry.compiledRegex(for: matchPattern)
                 guard let match = regex.firstMatch(in: line, from: location) else { continue }
-                let candidate = Candidate(kind: .match(rule, resolvedRule.grammar, match), start: match.range.location, order: index)
-                best = chooseBetter(current: best, challenger: candidate)
+                if match.range.location == location {
+                    return Candidate(kind: .match(rule, resolvedRule.grammar, match), start: match.range.location, order: index)
+                }
+                best = chooseBetter(current: best, challenger: Candidate(kind: .match(rule, resolvedRule.grammar, match), start: match.range.location, order: index))
             } else if let beginPattern = rule.begin {
                 let regex = try registry.compiledRegex(for: beginPattern)
                 guard let match = regex.firstMatch(in: line, from: location) else { continue }
-                let candidate = Candidate(kind: .begin(rule, resolvedRule.grammar, match), start: match.range.location, order: index)
-                best = chooseBetter(current: best, challenger: candidate)
+                if match.range.location == location {
+                    return Candidate(kind: .begin(rule, resolvedRule.grammar, match), start: match.range.location, order: index)
+                }
+                best = chooseBetter(current: best, challenger: Candidate(kind: .begin(rule, resolvedRule.grammar, match), start: match.range.location, order: index))
             }
         }
 
