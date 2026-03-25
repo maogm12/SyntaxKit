@@ -49,9 +49,11 @@ struct CLI {
     static func validate(_ arguments: [String], stdout: @escaping (String) -> Void) throws {
         let options = try parseOptions(arguments)
         let registry = try loadRegistry(grammarPaths: options.grammarPaths)
+        let parser = SyntaxParser(registry: registry)
         let scopes = options.scopeNames.isEmpty ? registry.registeredScopeNames : options.scopeNames
         for scope in scopes {
             _ = try registry.resolve(scopeName: scope)
+            _ = try parser.parse("", using: scope)
             stdout("Validated \(scope)\n")
         }
     }

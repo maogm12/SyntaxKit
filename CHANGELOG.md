@@ -6,6 +6,13 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-03-24
+
+### Changed
+
+- Moved regex-pattern validation out of `GrammarRegistry.resolve(...)` and into parser-side validation so the registry now focuses on grammar registration and include resolution only
+- Kept CLI `validate` behavior intact by running parser validation after resolution, so invalid regexes are still reported from the command-line workflow
+
 ## [1.9.0] - 2026-03-24
 
 ### Added

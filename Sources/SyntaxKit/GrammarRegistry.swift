@@ -33,8 +33,8 @@ public final class GrammarRegistry: @unchecked Sendable {
         }
 
         var visitedRules = Set<String>()
-        try validatePatterns(grammar.patterns, in: grammar, visitedRules: &visitedRules)
-        try validatePatterns(Array(grammar.repository.values), in: grammar, visitedRules: &visitedRules)
+        try validateReferences(grammar.patterns, in: grammar, visitedRules: &visitedRules)
+        try validateReferences(Array(grammar.repository.values), in: grammar, visitedRules: &visitedRules)
         return ResolvedGrammar(scopeName: grammar.scopeName, grammar: grammar)
     }
 
@@ -46,7 +46,7 @@ public final class GrammarRegistry: @unchecked Sendable {
         grammars.keys.map(\.rawValue).sorted()
     }
 
-    private func validatePatterns(_ rules: [Rule], in grammar: Grammar, visitedRules: inout Set<String>) throws {
+    private func validateReferences(_ rules: [Rule], in grammar: Grammar, visitedRules: inout Set<String>) throws {
         for rule in rules {
             let token = "\(grammar.scopeName.rawValue)#\(rule.id)"
             if visitedRules.contains(token) {
@@ -54,37 +54,25 @@ public final class GrammarRegistry: @unchecked Sendable {
             }
             visitedRules.insert(token)
 
-            if let pattern = rule.match {
-                _ = try compiledRegex(for: pattern)
-            }
-            if let pattern = rule.begin {
-                _ = try compiledRegex(for: pattern)
-            }
-            if let pattern = rule.end {
-                if !pattern.syntaxKitContainsBackreference {
-                    _ = try compiledRegex(for: pattern)
-                }
-            }
-
             if let include = rule.include {
                 switch IncludeReference(rawValue: include) {
                 case .repository(let name):
                     guard let nested = grammar.repository[name] else {
                         throw SyntaxKitError.resolution("Grammar '\(grammar.scopeName)' includes missing repository rule '#\(name)'.")
                     }
-                    try validatePatterns([nested], in: grammar, visitedRules: &visitedRules)
+                    try validateReferences([nested], in: grammar, visitedRules: &visitedRules)
                 case .self:
-                    try validatePatterns(grammar.patterns, in: grammar, visitedRules: &visitedRules)
+                    try validateReferences(grammar.patterns, in: grammar, visitedRules: &visitedRules)
                 case .external(let scope):
                     guard let externalGrammar = grammars[scope] else {
                         throw SyntaxKitError.resolution("Grammar '\(grammar.scopeName)' includes unknown external grammar '\(scope.rawValue)'.")
                     }
-                    try validatePatterns(externalGrammar.patterns, in: externalGrammar, visitedRules: &visitedRules)
-                    try validatePatterns(Array(externalGrammar.repository.values), in: externalGrammar, visitedRules: &visitedRules)
+                    try validateReferences(externalGrammar.patterns, in: externalGrammar, visitedRules: &visitedRules)
+                    try validateReferences(Array(externalGrammar.repository.values), in: externalGrammar, visitedRules: &visitedRules)
                 }
             }
 
-            try validatePatterns(rule.patterns, in: grammar, visitedRules: &visitedRules)
+            try validateReferences(rule.patterns, in: grammar, visitedRules: &visitedRules)
         }
     }
 }

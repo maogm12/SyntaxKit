@@ -134,6 +134,38 @@ import Testing
     #expect(alphaRange.lowerBound < betaRange.lowerBound)
 }
 
+@Test func cliValidateReportsInvalidRegexesFromParserValidation() throws {
+    let grammarPath = "/tmp/syntaxkit-invalid-validate.tmLanguage"
+    try """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>scopeName</key><string>source.invalid-cli</string>
+      <key>patterns</key>
+      <array>
+        <dict>
+          <key>match</key><string>(</string>
+          <key>name</key><string>invalid.regex</string>
+        </dict>
+      </array>
+    </dict>
+    </plist>
+    """.write(toFile: grammarPath, atomically: true, encoding: .utf8)
+
+    var stdout = ""
+    var stderr = ""
+    let exitCode = CLI.run(
+        arguments: ["validate", "--grammar", grammarPath, "--scope", "source.invalid-cli"],
+        stdout: { stdout += $0 },
+        stderr: { stderr += $0 }
+    )
+
+    #expect(exitCode == 1)
+    #expect(stdout.isEmpty)
+    #expect(stderr.contains("Failed to compile regex"))
+}
+
 private func fixture(named name: String) throws -> String {
     guard let url = Bundle.module.url(forResource: name, withExtension: nil, subdirectory: "Fixtures") else {
         Issue.record("Missing fixture \(name)")

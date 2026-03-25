@@ -76,6 +76,8 @@ public final class SyntaxParser {
         startingUTF16Offset: Int,
         initialContexts: [ContextFrame]
     ) throws -> IncrementalParseResult {
+        try validateCompiledPatterns(in: resolvedGrammar.grammar)
+
         var builder = SpanBuilder()
         var contexts = initialContexts
         var lineStates: [SyntaxLineState] = []
@@ -255,6 +257,52 @@ public final class SyntaxParser {
         return nil
     }
 
+    private func validateCompiledPatterns(in grammar: Grammar) throws {
+        var visitedRules = Set<String>()
+        try validateCompiledPatterns(grammar.patterns, in: grammar, visitedRules: &visitedRules)
+        try validateCompiledPatterns(Array(grammar.repository.values), in: grammar, visitedRules: &visitedRules)
+    }
+
+    private func validateCompiledPatterns(_ rules: [Rule], in grammar: Grammar, visitedRules: inout Set<String>) throws {
+        for rule in rules {
+            let token = "\(grammar.scopeName.rawValue)#\(rule.id)"
+            if visitedRules.contains(token) {
+                continue
+            }
+            visitedRules.insert(token)
+
+            if let pattern = rule.match {
+                _ = try registry.compiledRegex(for: pattern)
+            }
+            if let pattern = rule.begin {
+                _ = try registry.compiledRegex(for: pattern)
+            }
+            if let pattern = rule.end, !pattern.syntaxKitContainsBackreference {
+                _ = try registry.compiledRegex(for: pattern)
+            }
+
+            if let include = rule.include {
+                switch IncludeReference(rawValue: include) {
+                case .repository(let name):
+                    guard let nested = grammar.repository[name] else {
+                        throw SyntaxKitError.parsing("Missing repository rule '#\(name)' while validating grammar '\(grammar.scopeName.rawValue)'.")
+                    }
+                    try validateCompiledPatterns([nested], in: grammar, visitedRules: &visitedRules)
+                case .self:
+                    try validateCompiledPatterns(grammar.patterns, in: grammar, visitedRules: &visitedRules)
+                case .external(let scope):
+                    guard let externalGrammar = registry.grammar(for: scope.rawValue) else {
+                        throw SyntaxKitError.parsing("Missing external grammar '\(scope.rawValue)' while validating grammar '\(grammar.scopeName.rawValue)'.")
+                    }
+                    try validateCompiledPatterns(externalGrammar.patterns, in: externalGrammar, visitedRules: &visitedRules)
+                    try validateCompiledPatterns(Array(externalGrammar.repository.values), in: externalGrammar, visitedRules: &visitedRules)
+                }
+            }
+
+            try validateCompiledPatterns(rule.patterns, in: grammar, visitedRules: &visitedRules)
+        }
+    }
+
     private func bestCandidate(
         in line: String,
         at location: Int,
@@ -307,7 +355,7 @@ public final class SyntaxParser {
         }
     }
 
-    private func availablePatterns(in grammar: Grammar, from rules: [Rule]) throws -> [ResolvedRule] {
+    func availablePatterns(in grammar: Grammar, from rules: [Rule]) throws -> [ResolvedRule] {
         var results: [ResolvedRule] = []
         var visited = Set<String>()
         try expand(rules, in: grammar, visited: &visited, into: &results)
@@ -353,7 +401,7 @@ public final class SyntaxParser {
     }
 }
 
-private struct ResolvedRule {
+struct ResolvedRule {
     let rule: Rule
     let grammar: Grammar
 }

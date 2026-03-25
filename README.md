@@ -14,7 +14,7 @@ It can:
 
 ## Status
 
-`SyntaxKit` is currently at `1.8.0`.
+`SyntaxKit` is currently at `2.0.0`.
 
 The implementation in this repo covers the v1 plan in [plan.md](/Users/gmao/code/SyntaxKit/plan.md).
 

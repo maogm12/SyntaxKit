@@ -312,7 +312,7 @@ The compatibility shim should explicitly not promise to emulate:
 - [x] Refactor `RegexCache`, `RegexMatch`, and regex helper functions behind the new abstraction
 - [x] Remove direct `NSRegularExpression` dependencies from parser code
 - [x] Move regex compilation ownership out of `GrammarRegistry` and into the selected engine
-- [ ] Keep `GrammarRegistry` responsible for grammar registration/resolution only
+- [x] Keep `GrammarRegistry` responsible for grammar registration/resolution only
 - [ ] Keep theming and rendering fully independent from regex backend choice
 - [x] Decide the layering explicitly:
   - [x] parser

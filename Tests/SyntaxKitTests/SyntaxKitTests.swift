@@ -531,7 +531,7 @@ func styledTextAdapterSupportsEmptyInputs() throws {
     }
 }
 
-@Test func registryRejectsInvalidRegexAndMissingExternalGrammar() throws {
+@Test func parserRejectsInvalidRegexAndRegistryStillRejectsMissingExternalGrammar() throws {
     let badRegex = try GrammarLoader.load(data: Data(plist(ruleBody: """
       <key>patterns</key>
       <array>
@@ -542,9 +542,10 @@ func styledTextAdapterSupportsEmptyInputs() throws {
       </array>
     """).utf8))
     let registry = GrammarRegistry(grammars: [badRegex])
+    let parser = SyntaxParser(registry: registry)
     do {
-        _ = try registry.resolve(scopeName: "source.generated")
-        Issue.record("Expected invalid regex to fail resolution.")
+        _ = try parser.parse("", using: "source.generated")
+        Issue.record("Expected invalid regex to fail during parser validation.")
     } catch let error as SyntaxKitError {
         #expect(error.description.contains("Failed to compile regex"))
     }
@@ -861,8 +862,9 @@ func styledTextAdapterSupportsEmptyInputs() throws {
 
     let grammar = try GrammarLoader.load(data: Data(simpleCustomEngineGrammar.utf8))
     let failingRegistry = GrammarRegistry(grammars: [grammar], regexEngine: FailingRegexEngine())
+    let parser = SyntaxParser(registry: failingRegistry)
     do {
-        _ = try failingRegistry.resolve(scopeName: "source.custom-engine")
+        _ = try parser.parse("", using: "source.custom-engine")
         Issue.record("Expected custom regex engine failure to propagate.")
     } catch let error as SyntaxKitError {
         #expect(error.description.contains("custom failure"))
@@ -917,6 +919,19 @@ func styledTextAdapterSupportsEmptyInputs() throws {
         #expect(error.description.contains("fail-one"))
         #expect(error.description.contains("fail-two"))
     }
+
+    let emptyShim = TextMateRegexCompatibilityShim(backends: [], engineName: "empty-default")
+    do {
+        _ = try emptyShim.compile(pattern: "abc")
+        Issue.record("Expected empty backend list to fail.")
+    } catch let error as SyntaxKitError {
+        #expect(error.description.contains("empty-default"))
+    }
+
+    let aggregated = aggregatedBackendFailure(pattern: "abc", engineName: "manual-default", failures: ["one", "two"])
+    #expect(aggregated.description.contains("manual-default"))
+    #expect(aggregated.description.contains("one"))
+    #expect(aggregated.description.contains("two"))
 }
 
 @Test func regexCompatibilityShimRewritesSingleQuotedNamedForms() throws {
@@ -1040,6 +1055,21 @@ func styledTextAdapterSupportsEmptyInputs() throws {
         let parser = SyntaxParser(resolvedGrammar: ResolvedGrammar(scopeName: unresolvedExternalGrammar.scopeName, grammar: unresolvedExternalGrammar), registry: registry)
         _ = try parser.parse("x")
         Issue.record("Expected unresolved external include to fail during parsing.")
+    } catch let error as SyntaxKitError {
+        #expect(error.description.contains("Missing external grammar"))
+    }
+
+    let patternParser = SyntaxParser(registry: registry)
+    do {
+        _ = try patternParser.availablePatterns(in: unresolvedRepositoryGrammar, from: unresolvedRepositoryGrammar.patterns)
+        Issue.record("Expected unresolved repository include to fail during pattern expansion.")
+    } catch let error as SyntaxKitError {
+        #expect(error.description.contains("Missing repository rule"))
+    }
+
+    do {
+        _ = try patternParser.availablePatterns(in: unresolvedExternalGrammar, from: unresolvedExternalGrammar.patterns)
+        Issue.record("Expected unresolved external include to fail during pattern expansion.")
     } catch let error as SyntaxKitError {
         #expect(error.description.contains("Missing external grammar"))
     }
