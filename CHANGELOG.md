@@ -6,6 +6,12 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [2.0.8] - 2026-03-24
+
+### Fixed
+
+- Guaranteed global uniqueness of `Rule` IDs by implementing a thread-safe static ID generator in `Rule` and utilizing it during grammar loading.
+
 ## [2.0.7] - 2026-03-24
 
 ### Improved

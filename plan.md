@@ -371,7 +371,7 @@ The compatibility shim should explicitly not promise to emulate:
 - [x] **Optimize `bestCandidate` Search**: Consider using a more efficient way to find the next match than iterating through all available patterns for every character.
 
 ### Logic and Correctness
-- [ ] **Verify Rule ID Uniqueness**: Ensure that `rule.id` combined with `scopeName` is truly unique across all loaded grammars, especially when handling complex cross-grammar includes.
+- [x] **Verify Rule ID Uniqueness**: Ensure that `rule.id` combined with `scopeName` is truly unique across all loaded grammars, especially when handling complex cross-grammar includes.
 - [ ] **Improve Incremental Parsing**: Refine the `reparse` API to better handle multi-line edits and common editor integration patterns.
 
 ### Modernization

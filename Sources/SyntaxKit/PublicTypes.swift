@@ -60,6 +60,16 @@ public struct Capture: Equatable, Sendable {
 }
 
 public struct Rule: Equatable, Sendable {
+    private static let lock = NSLock()
+    nonisolated(unsafe) private static var nextIDValue = 0
+
+    public static func nextID() -> Int {
+        lock.lock()
+        defer { lock.unlock() }
+        nextIDValue += 1
+        return nextIDValue
+    }
+
     public let id: Int
     public let name: String?
     public let contentName: String?

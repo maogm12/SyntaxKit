@@ -30,7 +30,6 @@ public enum GrammarLoader {
 
 private struct GrammarDecoder {
     let dictionary: [String: Any]
-    var nextRuleID: Int = 0
 
     mutating func decode() throws -> Grammar {
         guard let scopeName = dictionary["scopeName"] as? String, !scopeName.isEmpty else {
@@ -75,8 +74,7 @@ private struct GrammarDecoder {
     }
 
     private mutating func decodeRule(_ dictionary: [String: Any]) throws -> Rule {
-        let id = nextRuleID
-        nextRuleID += 1
+        let id = Rule.nextID()
 
         let name = dictionary["name"] as? String
         let contentName = dictionary["contentName"] as? String
