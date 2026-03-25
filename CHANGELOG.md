@@ -6,6 +6,14 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-03-24
+
+### Added
+
+- Added an internal TextMate compatibility shim in the built-in default regex engine so unsupported Oniguruma subexpression-call constructs are rejected with targeted diagnostics instead of falling through as raw backend failures
+- Added a Swift-native regex backend inside `DefaultRegexEngine` on supported toolchains while keeping Foundation as the portable fallback backend and normalizing match results into the shared `CompiledRegex` contract
+- Added direct tests for injected custom engines, compatibility-shim failure aggregation, and default-engine backend helpers while keeping library line coverage at 100%
+
 ## [1.7.0] - 2026-03-24
 
 ### Added

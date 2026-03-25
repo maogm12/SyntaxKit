@@ -253,8 +253,8 @@ Keep the regex story simple and extensible:
 - [x] let the library accept a user-implemented regex engine
 - [x] ship one built-in default regex engine
 - [x] make the built-in default engine Foundation-backed today
-- [ ] allow the built-in default engine to use Swift native regex support internally on toolchains where that is a good fit
-- [ ] add a compatibility shim layer so the default engine is not just "raw backend behavior"
+- [x] allow the built-in default engine to use Swift native regex support internally on toolchains where that is a good fit
+- [x] add a compatibility shim layer so the default engine is not just "raw backend behavior"
 
 The parser should not care which regex backend is active, and app authors should be able to plug in a different engine later without forking SyntaxKit.
 
@@ -268,37 +268,37 @@ The parser should not care which regex backend is active, and app authors should
 ### Public API Direction
 
 - [x] Add a public `RegexEngine` protocol or equivalent public abstraction that app code can implement
-- [ ] Keep the engine contract minimal and parser-focused:
-  - [ ] compile a pattern
-  - [ ] search a single line from a UTF-16 offset
-  - [ ] return the full match range and capture ranges
-  - [ ] support escaped backreference substitution for `begin`/`end`
+- [x] Keep the engine contract minimal and parser-focused:
+  - [x] compile a pattern
+  - [x] search a single line from a UTF-16 offset
+  - [x] return the full match range and capture ranges
+  - [x] support escaped backreference substitution for `begin`/`end`
 - [x] Avoid exposing backend-native regex types in the public API
 - [x] Add parser and/or registry initializers that accept a custom regex engine
 - [x] Preserve current convenience initializers so existing users keep getting a default engine automatically
-- [ ] Keep the compatibility shim internal so app integrators can provide a raw engine without having to implement SyntaxKit-specific compatibility logic unless they want to
+- [x] Keep the compatibility shim internal so app integrators can provide a raw engine without having to implement SyntaxKit-specific compatibility logic unless they want to
 
 ### Default Engine Strategy
 
 - [x] Introduce a built-in `DefaultRegexEngine`
 - [x] Implement its baseline behavior with `NSRegularExpression`
-- [ ] Evaluate using Swift native regex APIs internally where the active Swift toolchain supports the required match and capture behavior cleanly
+- [x] Evaluate using Swift native regex APIs internally where the active Swift toolchain supports the required match and capture behavior cleanly
 - [ ] Keep the built-in engine's observable behavior stable even if its internal implementation changes between Foundation and Swift-native code paths
-- [ ] Treat Swift native regex as an implementation detail of the default engine unless there is a strong reason to expose separate built-in engine kinds
+- [x] Treat Swift native regex as an implementation detail of the default engine unless there is a strong reason to expose separate built-in engine kinds
 
 ### Compatibility Shim Layer
 
-- [ ] Add an internal compatibility adapter in front of the concrete regex backend used by the built-in engine
-- [ ] Make the adapter responsible for TextMate-oriented behavior that can be reasonably shimmed without changing the parser contract
-- [ ] Keep the adapter separate from the concrete backend so the same shim can wrap Foundation or Swift-native regex implementations
+- [x] Add an internal compatibility adapter in front of the concrete regex backend used by the built-in engine
+- [x] Make the adapter responsible for TextMate-oriented behavior that can be reasonably shimmed without changing the parser contract
+- [x] Keep the adapter separate from the concrete backend so the same shim can wrap Foundation or Swift-native regex implementations
 
 The compatibility shim should cover:
 
 - [ ] pattern preprocessing and normalization where a safe rewrite is possible
-- [ ] begin/end backreference substitution and escaping
-- [ ] targeted rejection of clearly unsupported Oniguruma/TextMate constructs
+- [x] begin/end backreference substitution and escaping
+- [x] targeted rejection of clearly unsupported Oniguruma/TextMate constructs
 - [ ] targeted diagnostics for patterns likely to differ semantically from TextMate behavior
-- [ ] normalization of match/capture results where backend output shape needs small adjustments
+- [x] normalization of match/capture results where backend output shape needs small adjustments
 
 The compatibility shim should explicitly not promise to emulate:
 
@@ -311,48 +311,48 @@ The compatibility shim should explicitly not promise to emulate:
 
 - [x] Refactor `RegexCache`, `RegexMatch`, and regex helper functions behind the new abstraction
 - [x] Remove direct `NSRegularExpression` dependencies from parser code
-- [ ] Move regex compilation ownership out of `GrammarRegistry` and into the selected engine
+- [x] Move regex compilation ownership out of `GrammarRegistry` and into the selected engine
 - [ ] Keep `GrammarRegistry` responsible for grammar registration/resolution only
 - [ ] Keep theming and rendering fully independent from regex backend choice
-- [ ] Decide the layering explicitly:
-  - [ ] parser
-  - [ ] compatibility shim
-  - [ ] concrete regex engine
+- [x] Decide the layering explicitly:
+  - [x] parser
+  - [x] compatibility shim
+  - [x] concrete regex engine
 - [ ] Ensure custom engines can be used either:
   - [ ] directly, with no SyntaxKit shim
   - [ ] wrapped by the built-in compatibility shim if we decide to expose that option later
 
 ### Validation and Diagnostics
 
-- [ ] Keep regex compilation failures surfaced as `SyntaxKitError.regexCompilation`
-- [ ] Include the active regex engine name in diagnostics when helpful
+- [x] Keep regex compilation failures surfaced as `SyntaxKitError.regexCompilation`
+- [x] Include the active regex engine name in diagnostics when helpful
 - [ ] Add targeted diagnostics when a pattern fails under the built-in engine and appears to rely on unsupported TextMate/Oniguruma features
 - [ ] Prefer simple, actionable diagnostics over a full regex static-analysis system in the first pass
 - [ ] Distinguish diagnostic sources where helpful:
-  - [ ] backend compilation failure
-  - [ ] compatibility-shim rejection
+  - [x] backend compilation failure
+  - [x] compatibility-shim rejection
   - [ ] compatibility warning about likely semantic mismatch
 
 ### Test Plan
 
 - [x] Add tests for the built-in default regex engine contract
 - [x] Add tests proving a custom regex engine can be injected and used by parsing flows
-- [ ] Add a fake test engine to verify:
-  - [ ] parser uses the injected engine
-  - [ ] capture ranges flow through the abstraction correctly
-  - [ ] begin/end backreference substitution still works through the abstraction
-  - [ ] regex compilation failures propagate correctly
-- [ ] Add tests for the compatibility shim:
+- [x] Add a fake test engine to verify:
+  - [x] parser uses the injected engine
+  - [x] capture ranges flow through the abstraction correctly
+  - [x] begin/end backreference substitution still works through the abstraction
+  - [x] regex compilation failures propagate correctly
+- [x] Add tests for the compatibility shim:
   - [ ] supported pattern rewrites
-  - [ ] unsupported feature rejection
+  - [x] unsupported feature rejection
   - [ ] warning/diagnostic cases
-  - [ ] match-result normalization behavior
-- [ ] Keep the existing parser fixture suite passing under the default engine
-- [ ] Maintain 100% line coverage for library files while introducing the abstraction
+  - [x] match-result normalization behavior
+- [x] Keep the existing parser fixture suite passing under the default engine
+- [x] Maintain 100% line coverage for library files while introducing the abstraction
 
 ### CLI and Integration Tasks
 
-- [ ] Keep the CLI on the built-in default engine for the initial implementation
+- [x] Keep the CLI on the built-in default engine for the initial implementation
 - [ ] Consider a later CLI engine-selection option only after the abstraction is stable
 - [ ] Document how apps can provide a custom regex engine in Swift
 - [ ] Document that the CLI uses the default engine plus the built-in compatibility shim

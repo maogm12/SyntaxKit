@@ -869,6 +869,56 @@ func styledTextAdapterSupportsEmptyInputs() throws {
     }
 }
 
+@Test func defaultRegexEngineCompatibilityShimRejectsUnsupportedOnigurumaConstructs() throws {
+    let engine = DefaultRegexEngine()
+    do {
+        _ = try engine.compile(pattern: #"\g<1>"#)
+        Issue.record("Expected unsupported Oniguruma construct to be rejected.")
+    } catch let error as SyntaxKitError {
+        #expect(error.description.contains("unsupported by engine 'default'"))
+    }
+
+    let compiled = try engine.compile(pattern: "a+")
+    #expect(compiled.firstMatch(in: "aa", from: 10) == nil)
+}
+
+@Test func foundationRegexHelpersCoverCachingAndMatching() throws {
+    let cache = FoundationRegexCache()
+    let regex = try cache.regex(for: "a+", engineName: "test-foundation")
+    let cachedRegex = try cache.regex(for: "a+", engineName: "test-foundation")
+    #expect(regex == cachedRegex)
+
+    let compiled = CompiledRegex(pattern: "a+") { string, offset in
+        foundationFirstMatch(regex: regex, in: string, from: offset)
+    }
+    #expect(compiled.firstMatch(in: "caa", from: 0)?.range == NSRange(location: 1, length: 2))
+    #expect(compiled.firstMatch(in: "bbb", from: 0) == nil)
+    #expect(compiled.firstMatch(in: "bbb", from: 10) == nil)
+
+    do {
+        _ = try cache.regex(for: "(", engineName: "test-foundation")
+        Issue.record("Expected Foundation regex compilation to fail.")
+    } catch let error as SyntaxKitError {
+        #expect(error.description.contains("test-foundation"))
+    }
+
+    let backend = FoundationRegexBackend()
+    let backendCompiled = try backend.compile(pattern: "a+")
+    #expect(backendCompiled.firstMatch(in: "caa", from: 0)?.range == NSRange(location: 1, length: 2))
+}
+
+@Test func regexCompatibilityShimReportsAggregatedBackendFailures() throws {
+    let shim = TextMateRegexCompatibilityShim(backends: [AlwaysFailingBuiltinRegexBackend(name: "fail-one"), AlwaysFailingBuiltinRegexBackend(name: "fail-two")], engineName: "test-default")
+    do {
+        _ = try shim.compile(pattern: "abc")
+        Issue.record("Expected aggregated backend failure.")
+    } catch let error as SyntaxKitError {
+        #expect(error.description.contains("test-default"))
+        #expect(error.description.contains("fail-one"))
+        #expect(error.description.contains("fail-two"))
+    }
+}
+
 @Test func parserRejectsMissingExternalGrammarAtParseTime() throws {
     let grammar = try GrammarLoader.load(data: Data(hostGrammar.utf8))
     let registry = GrammarRegistry(grammars: [grammar])
@@ -1055,6 +1105,14 @@ private struct FailingRegexEngine: RegexEngine {
 
     func compile(pattern: String) throws -> CompiledRegex {
         throw SyntaxKitError.regexCompilation("custom failure for \(pattern)")
+    }
+}
+
+private struct AlwaysFailingBuiltinRegexBackend: BuiltinRegexBackend {
+    let name: String
+
+    func compile(pattern: String) throws -> CompiledRegex {
+        throw SyntaxKitError.regexCompilation("forced failure for \(pattern)")
     }
 }
 
