@@ -107,11 +107,21 @@ private final class SwiftNativeRegexBox: @unchecked Sendable {
 
 final class FoundationRegexCache: @unchecked Sendable {
     private var storage: [String: NSRegularExpression] = [:]
+    private var order: [String] = []
+    private let maximumSize: Int
     private let lock = NSLock()
+
+    init(maximumSize: Int = 1000) {
+        self.maximumSize = maximumSize
+    }
 
     func regex(for pattern: String, engineName: String) throws -> NSRegularExpression {
         lock.lock()
         if let cached = storage[pattern] {
+            if let index = order.firstIndex(of: pattern) {
+                order.remove(at: index)
+            }
+            order.append(pattern)
             lock.unlock()
             return cached
         }
@@ -121,6 +131,12 @@ final class FoundationRegexCache: @unchecked Sendable {
             let regex = try NSRegularExpression(pattern: pattern, options: [])
             lock.lock()
             storage[pattern] = regex
+            order.append(pattern)
+
+            if storage.count > maximumSize {
+                let oldest = order.removeFirst()
+                storage.removeValue(forKey: oldest)
+            }
             lock.unlock()
             return regex
         } catch {

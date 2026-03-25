@@ -364,7 +364,7 @@ The compatibility shim should explicitly not promise to emulate:
 - [x] **Fix Force Unwraps in `SyntaxParser`**: Replace `rule.end!` with guards in `parseCore` to prevent crashes if a `Rule` is manually constructed without an end pattern.
 - [x] **Replace `try!` in `RegexSupport`**: Move static regexes to lazy initialized properties or use proper error handling instead of `try!`.
 - [x] **Thread Safety in `GrammarRegistry`**: Add internal locking to `GrammarRegistry` or convert it to an `actor` to ensure thread-safe registration and resolution.
-- [ ] **Bound `FoundationRegexCache`**: Implement a simple eviction policy (like LRU) or a maximum size for the regex cache to prevent unbounded memory growth in long-running processes.
+- [x] **Bound `FoundationRegexCache`**: Implement a simple eviction policy (like LRU) or a maximum size for the regex cache to prevent unbounded memory growth in long-running processes.
 
 ### Performance
 - [ ] **Cache Expanded Patterns**: In `SyntaxParser`, cache the result of `availablePatterns(in:from:)` for each rule/grammar context. Currently, it recursively expands includes for every cursor position on every line, which is O(Rules * TextLength).

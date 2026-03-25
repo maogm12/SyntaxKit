@@ -6,6 +6,12 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [2.0.5] - 2026-03-24
+
+### Added
+
+- Implemented an LRU (Least Recently Used) eviction policy for `FoundationRegexCache` with a configurable `maximumSize` to prevent unbounded memory growth.
+
 ## [2.0.4] - 2026-03-24
 
 ### Fixed

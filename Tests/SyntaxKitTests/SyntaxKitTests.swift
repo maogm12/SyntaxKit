@@ -1564,3 +1564,18 @@ private let missingCaptureGrammar = """
     // In current implementation it skips and returns original.
     #expect(result == #"\\1"#)
 }
+
+@Test func foundationRegexCacheEvictsOldEntries() throws {
+    let cache = FoundationRegexCache(maximumSize: 2)
+    _ = try cache.regex(for: "a", engineName: "test")
+    _ = try cache.regex(for: "b", engineName: "test")
+    
+    // Access "a" again to make it most recent
+    _ = try cache.regex(for: "a", engineName: "test")
+    
+    // Adding "c" should evict "b" (now the oldest)
+    _ = try cache.regex(for: "c", engineName: "test")
+    
+    // Adding "d" should evict "a" (oldest)
+    _ = try cache.regex(for: "d", engineName: "test")
+}
