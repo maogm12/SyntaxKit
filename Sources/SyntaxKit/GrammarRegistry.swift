@@ -2,6 +2,7 @@ import Foundation
 
 public final class GrammarRegistry: @unchecked Sendable {
     private var grammars: [ScopeName: Grammar]
+    private var patternCache: [String: [ResolvedRule]] = [:]
     private let lock = NSLock()
     let regexEngine: any RegexEngine
 
@@ -17,6 +18,7 @@ public final class GrammarRegistry: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         grammars[grammar.scopeName] = grammar
+        patternCache.removeAll()
     }
 
     public func register(contentsOf grammars: [Grammar]) {
@@ -25,6 +27,26 @@ public final class GrammarRegistry: @unchecked Sendable {
         for grammar in grammars {
             self.grammars[grammar.scopeName] = grammar
         }
+        patternCache.removeAll()
+    }
+
+    func cachedPatterns(for grammar: Grammar, rules: [Rule]) -> [ResolvedRule]? {
+        lock.lock()
+        defer { lock.unlock() }
+        let key = cacheKey(for: grammar, rules: rules)
+        return patternCache[key]
+    }
+
+    func setCachedPatterns(_ resolved: [ResolvedRule], for grammar: Grammar, rules: [Rule]) {
+        lock.lock()
+        defer { lock.unlock() }
+        let key = cacheKey(for: grammar, rules: rules)
+        patternCache[key] = resolved
+    }
+
+    private func cacheKey(for grammar: Grammar, rules: [Rule]) -> String {
+        let ruleIDs = rules.map { String($0.id) }.joined(separator: ",")
+        return "\(grammar.scopeName.rawValue)[\(ruleIDs)]"
     }
 
     public func grammar(for scopeName: String) -> Grammar? {

@@ -6,6 +6,12 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [2.0.6] - 2026-03-24
+
+### Improved
+
+- Implemented caching for expanded grammar patterns in `GrammarRegistry`, significantly improving parsing performance by avoiding redundant recursive include resolutions.
+
 ## [2.0.5] - 2026-03-24
 
 ### Added

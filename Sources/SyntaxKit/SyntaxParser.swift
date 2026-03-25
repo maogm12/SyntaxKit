@@ -360,9 +360,15 @@ public final class SyntaxParser {
     }
 
     func availablePatterns(in grammar: Grammar, from rules: [Rule]) throws -> [ResolvedRule] {
+        if let cached = registry.cachedPatterns(for: grammar, rules: rules) {
+            return cached
+        }
+
         var results: [ResolvedRule] = []
         var visited = Set<String>()
         try expand(rules, in: grammar, visited: &visited, into: &results)
+        
+        registry.setCachedPatterns(results, for: grammar, rules: rules)
         return results
     }
 

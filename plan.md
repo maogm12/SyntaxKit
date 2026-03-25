@@ -367,7 +367,7 @@ The compatibility shim should explicitly not promise to emulate:
 - [x] **Bound `FoundationRegexCache`**: Implement a simple eviction policy (like LRU) or a maximum size for the regex cache to prevent unbounded memory growth in long-running processes.
 
 ### Performance
-- [ ] **Cache Expanded Patterns**: In `SyntaxParser`, cache the result of `availablePatterns(in:from:)` for each rule/grammar context. Currently, it recursively expands includes for every cursor position on every line, which is O(Rules * TextLength).
+- [x] **Cache Expanded Patterns**: In `SyntaxParser`, cache the result of `availablePatterns(in:from:)` for each rule/grammar context. Currently, it recursively expands includes for every cursor position on every line, which is O(Rules * TextLength).
 - [ ] **Optimize `bestCandidate` Search**: Consider using a more efficient way to find the next match than iterating through all available patterns for every character.
 
 ### Logic and Correctness
