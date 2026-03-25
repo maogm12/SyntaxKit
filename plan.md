@@ -358,9 +358,22 @@ The compatibility shim should explicitly not promise to emulate:
 - [x] Document how apps can provide a custom regex engine in Swift
 - [x] Document that the CLI uses the default engine plus the built-in compatibility shim
 
-### Future Follow-Ups
+## Potential Improvements and Bug Fixes
 
-- [x] Revisit whether a separate Oniguruma-backed engine should ship as an optional package product
-- [x] Revisit whether Swift native regex should become a distinct built-in engine or remain only an implementation detail of the default engine
-- [x] Add a compatibility matrix to the README once multiple concrete engines exist
-- [x] Revisit whether the compatibility shim should become a reusable public wrapper around custom engines
+### Safety and Stability
+- [x] **Fix Force Unwraps in `SyntaxParser`**: Replace `rule.end!` with guards in `parseCore` to prevent crashes if a `Rule` is manually constructed without an end pattern.
+- [ ] **Replace `try!` in `RegexSupport`**: Move static regexes to lazy initialized properties or use proper error handling instead of `try!`.
+- [ ] **Thread Safety in `GrammarRegistry`**: Add internal locking to `GrammarRegistry` or convert it to an `actor` to ensure thread-safe registration and resolution.
+- [ ] **Bound `FoundationRegexCache`**: Implement a simple eviction policy (like LRU) or a maximum size for the regex cache to prevent unbounded memory growth in long-running processes.
+
+### Performance
+- [ ] **Cache Expanded Patterns**: In `SyntaxParser`, cache the result of `availablePatterns(in:from:)` for each rule/grammar context. Currently, it recursively expands includes for every cursor position on every line, which is O(Rules * TextLength).
+- [ ] **Optimize `bestCandidate` Search**: Consider using a more efficient way to find the next match than iterating through all available patterns for every character.
+
+### Logic and Correctness
+- [ ] **Verify Rule ID Uniqueness**: Ensure that `rule.id` combined with `scopeName` is truly unique across all loaded grammars, especially when handling complex cross-grammar includes.
+- [ ] **Improve Incremental Parsing**: Refine the `reparse` API to better handle multi-line edits and common editor integration patterns.
+
+### Modernization
+- [ ] **Swift Concurrency**: Fully audit the codebase for Swift Concurrency compatibility (strict concurrency checks).
+- [ ] **Swift Native Regex**: Expand usage of Swift Native Regex where possible, while maintaining Foundation as a robust fallback.

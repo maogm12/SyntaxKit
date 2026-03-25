@@ -6,6 +6,12 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-03-24
+
+### Fixed
+
+- Replaced force unwrap of rule end pattern in `SyntaxParser` with safe unwrap and descriptive error when a begin rule is missing its required end pattern.
+
 ## [2.0.1] - 2026-03-24
 
 ### Added

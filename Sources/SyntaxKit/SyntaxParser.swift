@@ -162,8 +162,12 @@ public final class SyntaxParser {
                         captures: rule.effectiveBeginCaptures
                     )
 
+                    guard let endPattern = rule.end else {
+                        throw SyntaxKitError.parsing("Begin rule \(rule.id) is missing required 'end' pattern.")
+                    }
+
                     let resolvedEnd = registry.regexEngine.substituteBackreferences(
-                        in: rule.end!,
+                        in: endPattern,
                         using: match,
                         line: absoluteLineInfo.text
                     )

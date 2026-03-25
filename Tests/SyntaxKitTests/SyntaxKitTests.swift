@@ -1518,3 +1518,40 @@ private let missingCaptureGrammar = """
 </dict>
 </plist>
 """
+
+@Test func parserThrowsWhenBeginRuleIsMissingEndPattern() throws {
+    let rule = Rule(
+        id: 100,
+        name: "test",
+        contentName: nil,
+        match: nil,
+        begin: "a",
+        end: nil, // Missing end pattern
+        captures: [],
+        beginCaptures: [],
+        endCaptures: [],
+        include: nil,
+        patterns: []
+    )
+    let grammar = Grammar(
+        name: "test",
+        scopeName: ScopeName(rawValue: "source.test"),
+        fileTypes: [],
+        firstLineMatch: nil,
+        foldingStartMarker: nil,
+        foldingStopMarker: nil,
+        patterns: [rule],
+        repository: [:]
+    )
+    let registry = GrammarRegistry(grammars: [grammar])
+    let parser = SyntaxParser(registry: registry)
+    
+    do {
+        _ = try parser.parse("a", using: "source.test")
+        Issue.record("Expected parser to throw an error for missing end pattern")
+    } catch let error as SyntaxKitError {
+        #expect(error.description.contains("missing required 'end' pattern"))
+    } catch {
+        Issue.record("Unexpected error type: \(error)")
+    }
+}
