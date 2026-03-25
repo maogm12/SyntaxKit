@@ -842,6 +842,33 @@ func styledTextAdapterSupportsEmptyInputs() throws {
     #expect(!"plain".syntaxKitContainsBackreference)
 }
 
+@Test func customRegexEngineCanBeInjectedIntoParsingFlows() throws {
+    let grammar = try GrammarLoader.load(data: Data(simpleCustomEngineGrammar.utf8))
+    let engine = RecordingRegexEngine()
+    let registry = GrammarRegistry(grammars: [grammar], regexEngine: engine)
+    let parser = SyntaxParser(registry: registry)
+
+    let result = try parser.parse("x", using: "source.custom-engine")
+
+    #expect(result.spans.contains(where: { $0.scopes.contains("constant.custom-engine") }))
+    #expect(engine.compiledPatterns.contains("x"))
+}
+
+@Test func customRegexEngineUsesProtocolBackreferenceDefaultAndPropagatesFailures() throws {
+    let beginMatch = RegexMatch(range: NSRange(location: 0, length: 1), captures: [1: NSRange(location: 0, length: 1)])
+    let engine = RecordingRegexEngine()
+    #expect(engine.substituteBackreferences(in: #"\1"#, using: beginMatch, line: "a") == "a")
+
+    let grammar = try GrammarLoader.load(data: Data(simpleCustomEngineGrammar.utf8))
+    let failingRegistry = GrammarRegistry(grammars: [grammar], regexEngine: FailingRegexEngine())
+    do {
+        _ = try failingRegistry.resolve(scopeName: "source.custom-engine")
+        Issue.record("Expected custom regex engine failure to propagate.")
+    } catch let error as SyntaxKitError {
+        #expect(error.description.contains("custom failure"))
+    }
+}
+
 @Test func parserRejectsMissingExternalGrammarAtParseTime() throws {
     let grammar = try GrammarLoader.load(data: Data(hostGrammar.utf8))
     let registry = GrammarRegistry(grammars: [grammar])
@@ -995,6 +1022,42 @@ private func expectSyntaxKitError(plist: String, containing needle: String) thro
     }
 }
 
+private final class RecordingRegexEngine: RegexEngine, @unchecked Sendable {
+    let name = "recording"
+
+    private var storage: [String] = []
+    private let lock = NSLock()
+
+    var compiledPatterns: [String] {
+        lock.lock()
+        defer { lock.unlock() }
+        return storage
+    }
+
+    func compile(pattern: String) throws -> CompiledRegex {
+        lock.lock()
+        storage.append(pattern)
+        lock.unlock()
+
+        return CompiledRegex(pattern: pattern) { string, offset in
+            let nsString = string as NSString
+            let range = nsString.range(of: pattern, options: [], range: NSRange(location: offset, length: nsString.length - offset))
+            guard range.location != NSNotFound else {
+                return nil
+            }
+            return RegexMatch(range: range, captures: [0: range])
+        }
+    }
+}
+
+private struct FailingRegexEngine: RegexEngine {
+    let name = "failing"
+
+    func compile(pattern: String) throws -> CompiledRegex {
+        throw SyntaxKitError.regexCompilation("custom failure for \(pattern)")
+    }
+}
+
 private func expectThemeError(plist: String, containing needle: String) throws {
     do {
         _ = try ThemeLoader.load(data: Data(plist.utf8))
@@ -1044,6 +1107,23 @@ private let simpleNumbersGrammar = """
       </array>
     </dict>
   </dict>
+</dict>
+</plist>
+"""
+
+private let simpleCustomEngineGrammar = """
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>scopeName</key><string>source.custom-engine</string>
+  <key>patterns</key>
+  <array>
+    <dict>
+      <key>match</key><string>x</string>
+      <key>name</key><string>constant.custom-engine</string>
+    </dict>
+  </array>
 </dict>
 </plist>
 """

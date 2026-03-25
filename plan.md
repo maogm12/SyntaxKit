@@ -250,7 +250,7 @@ Regex compatibility should account for the fact that TextMate documents its gram
 
 Keep the regex story simple and extensible:
 
-- [ ] let the library accept a user-implemented regex engine
+- [x] let the library accept a user-implemented regex engine
 - [x] ship one built-in default regex engine
 - [x] make the built-in default engine Foundation-backed today
 - [ ] allow the built-in default engine to use Swift native regex support internally on toolchains where that is a good fit
@@ -274,7 +274,7 @@ The parser should not care which regex backend is active, and app authors should
   - [ ] return the full match range and capture ranges
   - [ ] support escaped backreference substitution for `begin`/`end`
 - [x] Avoid exposing backend-native regex types in the public API
-- [ ] Add parser and/or registry initializers that accept a custom regex engine
+- [x] Add parser and/or registry initializers that accept a custom regex engine
 - [x] Preserve current convenience initializers so existing users keep getting a default engine automatically
 - [ ] Keep the compatibility shim internal so app integrators can provide a raw engine without having to implement SyntaxKit-specific compatibility logic unless they want to
 
@@ -336,7 +336,7 @@ The compatibility shim should explicitly not promise to emulate:
 ### Test Plan
 
 - [x] Add tests for the built-in default regex engine contract
-- [ ] Add tests proving a custom regex engine can be injected and used by parsing flows
+- [x] Add tests proving a custom regex engine can be injected and used by parsing flows
 - [ ] Add a fake test engine to verify:
   - [ ] parser uses the injected engine
   - [ ] capture ranges flow through the abstraction correctly
