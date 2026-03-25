@@ -6,6 +6,13 @@ The format is based on Keep a Changelog and the project uses Semantic Versioning
 
 ## [Unreleased]
 
+## [2.0.9] - 2026-03-24
+
+### Improved
+
+- Enhanced the incremental parsing API in `SyntaxParser` with a more robust `reparse` method that efficiently handles text edits by identifying affected line ranges.
+- Fixed `splitLines` to correctly track UTF-16 offsets and preserve line-ending newlines, ensuring consistent behavior during incremental updates.
+
 ## [2.0.8] - 2026-03-24
 
 ### Fixed

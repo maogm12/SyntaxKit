@@ -1579,3 +1579,32 @@ private let missingCaptureGrammar = """
     // Adding "d" should evict "a" (oldest)
     _ = try cache.regex(for: "d", engineName: "test")
 }
+
+@Test func robustReparseHandlesEdits() throws {
+    let grammar = try GrammarLoader.load(data: #"{ "scopeName": "source.test", "patterns": [ { "match": "A", "name": "test.a" }, { "match": "B", "name": "test.b" }, { "match": "C", "name": "test.c" } ] }"#.data(using: .utf8)!)
+    let registry = GrammarRegistry(grammars: [grammar])
+    let parser = SyntaxParser(registry: registry)
+    let resolved = try registry.resolve(scopeName: "source.test")
+    
+    let originalText = "ABC"
+    let originalResult = try parser.parseIncrementally(originalText, using: "source.test")
+    
+    #expect(originalResult.parseResult.spans.count == 3)
+    
+    // Edit "B" to "C": "ACC"
+    let newText = "ACC"
+    let editRange = NSRange(location: 1, length: 1)
+    let reparseResult = try parser.reparse(
+        newText,
+        using: resolved,
+        previousLineStates: originalResult.lineStates,
+        editRange: editRange
+    )
+    
+    // Reparse starts from line 1.
+    // "ACC" -> 3 spans.
+    #expect(reparseResult.parseResult.spans.count == 3)
+    #expect(reparseResult.parseResult.spans[0].scopes.contains("test.a"))
+    #expect(reparseResult.parseResult.spans[1].scopes.contains("test.c"))
+    #expect(reparseResult.parseResult.spans[2].scopes.contains("test.c"))
+}

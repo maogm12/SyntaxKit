@@ -65,6 +65,39 @@ public final class SyntaxParser {
         )
     }
 
+    public func reparse(
+        _ text: String,
+        using resolvedGrammar: ResolvedGrammar? = nil,
+        previousLineStates: [SyntaxLineState],
+        editRange: NSRange
+    ) throws -> IncrementalParseResult {
+        guard let resolvedGrammar = resolvedGrammar ?? defaultGrammar else {
+            throw SyntaxKitError.parsing("No grammar provided for parse request.")
+        }
+
+        // Find the first line affected by the edit
+        var firstAffectedLineIndex = 0
+        for (index, lineState) in previousLineStates.enumerated() {
+            if lineState.nextUTF16Offset > editRange.location {
+                firstAffectedLineIndex = index
+                break
+            }
+        }
+
+        let startingLine = firstAffectedLineIndex == 0 ? 1 : previousLineStates[firstAffectedLineIndex - 1].line + 1
+        let startingOffset = firstAffectedLineIndex == 0 ? 0 : previousLineStates[firstAffectedLineIndex - 1].nextUTF16Offset
+        let initialContexts = firstAffectedLineIndex == 0 ? [] : try restoreContexts(from: previousLineStates[firstAffectedLineIndex - 1].contexts)
+
+        return try parseCore(
+            text,
+            using: resolvedGrammar,
+            startingAtLine: startingLine,
+            startingUTF16Offset: startingOffset,
+            initialContexts: initialContexts,
+            skipLinesBeforeOffset: startingOffset
+        )
+    }
+
     public func tokenizeIncrementally(_ text: String, using scopeName: String) throws -> IncrementalParseResult {
         try parseIncrementally(text, using: scopeName)
     }
@@ -74,7 +107,8 @@ public final class SyntaxParser {
         using resolvedGrammar: ResolvedGrammar,
         startingAtLine: Int,
         startingUTF16Offset: Int,
-        initialContexts: [ContextFrame]
+        initialContexts: [ContextFrame],
+        skipLinesBeforeOffset: Int = 0
     ) throws -> IncrementalParseResult {
         try validateCompiledPatterns(in: resolvedGrammar.grammar)
 
@@ -85,6 +119,9 @@ public final class SyntaxParser {
         let rootScopes = [resolvedGrammar.scopeName.rawValue]
 
         for lineInfo in lines {
+            if lineInfo.startUTF16 < skipLinesBeforeOffset {
+                continue
+            }
             let absoluteLineInfo = LineInfo(
                 number: lineInfo.number + startingAtLine - 1,
                 startUTF16: lineInfo.startUTF16 + startingUTF16Offset,
@@ -472,26 +509,23 @@ private func splitLines(_ text: String) -> [LineInfo] {
 
     var lines: [LineInfo] = []
     var current = ""
+    var lineStartUTF16 = 0
+    var currentUTF16Offset = 0
     var lineNumber = 1
-    var lineStart = 0
 
-    func flushLine() {
-        lines.append(LineInfo(number: lineNumber, startUTF16: lineStart, text: current))
-        lineStart += current.utf16.count
-        lineNumber += 1
-        current.removeAll(keepingCapacity: true)
-    }
-
-    var iterator = text.makeIterator()
-    while let character = iterator.next() {
-        current.append(character)
-        if character == "\n" {
-            flushLine()
+    for char in text {
+        current.append(char)
+        currentUTF16Offset += String(char).utf16.count
+        if char == "\n" {
+            lines.append(LineInfo(number: lineNumber, startUTF16: lineStartUTF16, text: current))
+            lineNumber += 1
+            lineStartUTF16 = currentUTF16Offset
+            current = ""
         }
     }
 
     if !current.isEmpty {
-        lines.append(LineInfo(number: lineNumber, startUTF16: lineStart, text: current))
+        lines.append(LineInfo(number: lineNumber, startUTF16: lineStartUTF16, text: current))
     }
 
     return lines
